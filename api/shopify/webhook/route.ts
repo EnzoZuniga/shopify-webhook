@@ -2,10 +2,28 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
+import crypto from "crypto";
+
+const SHOPIFY_SECRET = process.env.SHOPIFY_SECRET || "";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    // Vérification de sécurité Shopify (HMAC)
+    const hmacHeader = req.headers.get("x-shopify-hmac-sha256");
+    const bodyText = await req.text();
+    const body = JSON.parse(bodyText);
+
+    if (SHOPIFY_SECRET && hmacHeader) {
+      const digest = crypto
+        .createHmac("sha256", SHOPIFY_SECRET)
+        .update(bodyText, "utf8")
+        .digest("base64");
+
+      if (digest !== hmacHeader) {
+        console.log("❌ Webhook non vérifié - HMAC invalide");
+        return NextResponse.json({ error: "Webhook non vérifié" }, { status: 401 });
+      }
+    }
 
     console.log("📩 Webhook reçu :", body);
 
@@ -18,7 +36,7 @@ export async function POST(req: Request) {
     // Récupérer les informations de la commande
     const orderId = body.id;
     const customerEmail = body.customer?.email;
-    const customerName = body.customer?.first_name + " " + body.customer?.last_name;
+    const customerName = `${body.customer?.first_name || ""} ${body.customer?.last_name || ""}`.trim();
     const totalPrice = body.total_price;
     const currency = body.currency;
 
