@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { readdir, mkdir } from "fs/promises";
+import { readdir } from "fs/promises";
 import { join } from "path";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,14 +9,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const qrCodesDir = join(process.cwd(), "public", "qr-codes");
-    
-    // Créer le dossier s'il n'existe pas
-    try {
-      await mkdir(qrCodesDir, { recursive: true });
-    } catch (error) {
-      // Le dossier existe déjà, pas de problème
-    }
-    
     const files = await readdir(qrCodesDir);
     
     const qrCodes = files
@@ -26,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ qrCodes });
   } catch (error) {
     console.error("Erreur lors de la lecture des QR codes:", error);
-    // Retourner une liste vide au lieu d'une erreur 500
+    // Retourner une liste vide si le dossier n'existe pas
     res.status(200).json({ qrCodes: [] });
   }
 } 
