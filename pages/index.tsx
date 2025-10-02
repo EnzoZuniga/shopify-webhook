@@ -36,6 +36,23 @@ export default function Home() {
     }
   };
 
+  const testConnectivity = async () => {
+    try {
+      const response = await fetch("/api/test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ test: "connectivity" })
+      });
+
+      const result = await response.json();
+      setTestResult(`🔗 Test de connectivité: ${JSON.stringify(result, null, 2)}`);
+    } catch (error) {
+      setTestResult(`❌ Erreur de connectivité: ${error}`);
+    }
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>🎯 Webhook Shopify - Tableau de bord</h1>
@@ -47,7 +64,7 @@ export default function Home() {
           <li>Allez dans <strong>Paramètres → Notifications</strong></li>
           <li>Créez un nouveau webhook avec :</li>
           <ul>
-            <li><strong>URL</strong> : <code>https://votre-domaine.vercel.app/api/shopify/webhook</code></li>
+            <li><strong>URL</strong> : <code>https://shopify-webhook-silk.vercel.app/api/shopify/webhook</code></li>
             <li><strong>Événement</strong> : <code>orders/paid</code></li>
             <li><strong>Format</strong> : <code>JSON</code></li>
           </ul>
@@ -56,20 +73,34 @@ export default function Home() {
 
       <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#e8f4fd', borderRadius: '8px' }}>
         <h3>🧪 Test du webhook :</h3>
-        <button 
-          onClick={testWebhook}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            marginBottom: "10px"
-          }}
-        >
-          Tester le webhook
-        </button>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <button 
+            onClick={testConnectivity}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            🔗 Test connectivité
+          </button>
+          <button 
+            onClick={testWebhook}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}
+          >
+            🧪 Test webhook
+          </button>
+        </div>
         {testResult && (
           <pre style={{ 
             backgroundColor: "#f9f9f9", 
