@@ -1,6 +1,6 @@
-# 🎯 Générateur de QR Codes Shopify
+# 🎯 Webhook Shopify Simple
 
-Ce projet génère automatiquement des QR codes quand une commande Shopify est payée.
+Un webhook Shopify simple qui reçoit et affiche les données de commande.
 
 ## 🚀 Installation
 
@@ -9,12 +9,7 @@ Ce projet génère automatiquement des QR codes quand une commande Shopify est p
 npm install
 ```
 
-2. Configurez vos variables d'environnement dans `.env.local` :
-```env
-SHOPIFY_SECRET=votre_secret_shopify
-```
-
-3. Lancez le serveur de développement :
+2. Lancez le serveur de développement :
 ```bash
 npm run dev
 ```
@@ -27,23 +22,6 @@ npm run dev
    - **Événement** : `orders/paid`
    - **Format** : `JSON`
 
-## 📱 Fonctionnalités
-
-- ✅ Génération automatique de QR code pour les commandes payées
-- ✅ Sauvegarde des QR codes dans `/public/qr-codes/`
-- ✅ Interface web pour visualiser les QR codes générés
-- ✅ Vérification de sécurité des webhooks Shopify
-
-## 🎯 Contenu du QR Code
-
-Le QR code contient :
-- ID de la commande
-- Email du client
-- Nom du client
-- Prix total
-- Devise
-- Timestamp
-
 ## 📁 Structure
 
 ```
@@ -54,10 +32,16 @@ Le QR code contient :
 └── .env.local                   # Variables d'environnement
 ```
 
+
 ## 🧪 Test
 
-1. Créez une commande test dans Shopify
-2. Marquez-la comme payée
-3. Vérifiez que le QR code apparaît sur `/`
+1. Configurez votre webhook Shopify
+2. Faites une commande test
+3. Vérifiez les logs dans votre terminal ou dashboard Vercel
 
-Maintenant, testons votre installation : 
+## ✅ Fonctionnalités
+
+- ✅ Reçoit les données de commande Shopify
+- ✅ Affiche les données dans la console
+- ✅ Retourne `{ success: true }` si tout va bien
+- ✅ Gestion d'erreurs avec code 500
