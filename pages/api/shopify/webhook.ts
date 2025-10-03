@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import crypto from "crypto";
+import { sendOrderConfirmationEmail, sendAdminNotificationEmail } from "../../../lib/email";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Log de toutes les requêtes entrantes
@@ -26,19 +27,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       shop: shopifyShop
     });
 
-    // Vérifier la signature HMAC (optionnel mais recommandé)
-    if (shopifySignature && process.env.SHOPIFY_WEBHOOK_SECRET) {
-      const body = JSON.stringify(req.body);
-      const hmac = crypto.createHmac("sha256", process.env.SHOPIFY_WEBHOOK_SECRET);
-      hmac.update(body, "utf8");
-      const hash = hmac.digest("base64");
-      
-      if (hash !== shopifySignature) {
-        console.error("❌ Signature HMAC invalide");
-        return res.status(401).json({ error: "Signature invalide" });
-      }
-      console.log("✅ Signature HMAC valide");
+    // Vérifier la signature HMAC (OBLIGATOIRE pour la sécurité)
+    if (!process.env.SHOPIFY_WEBHOOK_SECRET) {
+      console.error("❌ SHOPIFY_WEBHOOK_SECRET non configuré");
+      return res.status(500).json({ error: "Configuration manquante" });
     }
+
+    if (!shopifySignature) {
+      console.error("❌ Signature HMAC manquante dans les headers");
+      return res.status(401).json({ error: "Signature manquante" });
+    }
+
+    // Validation HMAC obligatoire
+    const bodyString = JSON.stringify(req.body);
+    const hmac = crypto.createHmac("sha256", process.env.SHOPIFY_WEBHOOK_SECRET);
+    hmac.update(bodyString, "utf8");
+    const hash = hmac.digest("base64");
+    
+    if (hash !== shopifySignature) {
+      console.error("❌ Signature HMAC invalide - Possible tentative d'intrusion");
+      console.error("Hash calculé:", hash);
+      console.error("Hash reçu:", shopifySignature);
+      return res.status(401).json({ error: "Signature invalide" });
+    }
+    
+    console.log("✅ Signature HMAC valide - Webhook authentifié");
 
     // Lire le JSON envoyé par Shopify
     const body = req.body;
@@ -64,6 +77,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           price: item.price
         }))
       });
+
+      // Envoyer l'email de confirmation au client
+      try {
+        console.log("📧 Envoi de l'email de confirmation...");
+        const emailResult = await sendOrderConfirmationEmail(body);
+        
+        if (emailResult.success) {
+          console.log("✅ Email de confirmation envoyé:", emailResult.emailId);
+        } else {
+          console.error("❌ Erreur envoi email client:", emailResult.error);
+        }
+      } catch (emailError) {
+        console.error("❌ Erreur lors de l'envoi de l'email client:", emailError);
+      }
+
+      // Envoyer la notification à l'admin
+      try {
+        console.log("📧 Envoi de la notification admin...");
+        const adminEmailResult = await sendAdminNotificationEmail(body);
+        
+        if (adminEmailResult.success) {
+          console.log("✅ Notification admin envoyée:", adminEmailResult.emailId);
+        } else {
+          console.error("❌ Erreur notification admin:", adminEmailResult.error);
+        }
+      } catch (adminEmailError) {
+        console.error("❌ Erreur notification admin:", adminEmailError);
+      }
     }
     
     // Retourner { success: true } en JSON si tout va bien

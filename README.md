@@ -70,11 +70,18 @@ Le webhook log maintenant :
 - 💰 Détails des commandes payées
 - ❌ Erreurs détaillées avec stack trace
 
-## 🛡️ Sécurité
+## 🛡️ Sécurité (OBLIGATOIRE)
 
-- ✅ Validation HMAC (si `SHOPIFY_WEBHOOK_SECRET` configuré)
-- ✅ Vérification des headers Shopify
-- ✅ Gestion d'erreurs robuste
+- ✅ **Validation HMAC OBLIGATOIRE** (webhook refuse les requêtes sans secret)
+- ✅ **Vérification des headers Shopify**
+- ✅ **Protection contre les intrusions** (logs détaillés des tentatives)
+- ✅ **Gestion d'erreurs robuste**
+
+### ⚠️ Configuration de sécurité requise :
+```bash
+# OBLIGATOIRE - Sans ce secret, le webhook ne fonctionne pas
+SHOPIFY_WEBHOOK_SECRET=votre_secret_shopify
+```
 
 ## 📁 Structure
 
@@ -91,9 +98,34 @@ Le webhook log maintenant :
 2. **Test Shopify** : Faites une commande test dans votre boutique
 3. **Vérifiez les logs** : Dans Vercel Dashboard → Functions → Logs
 
+## 📧 Configuration Email
+
+### 1. Créer un compte Resend
+1. Allez sur [https://resend.com](https://resend.com)
+2. Créez un compte gratuit
+3. Vérifiez votre domaine d'email
+4. Obtenez votre clé API
+
+### 2. Variables d'environnement
+```bash
+# Copiez env.example vers .env.local
+cp env.example .env.local
+
+# Configurez vos variables
+RESEND_API_KEY=re_your_api_key_here
+FROM_EMAIL=noreply@votre-domaine.com
+ADMIN_EMAIL=admin@votre-domaine.com
+```
+
+### 3. Types d'emails envoyés
+- ✅ **Email de confirmation client** : Détails de la commande, articles, total
+- ✅ **Notification admin** : Résumé de la nouvelle commande reçue
+
 ## ✅ Fonctionnalités
 
 - ✅ Reçoit les données de commande Shopify
+- ✅ Envoie des emails automatiques (client + admin)
+- ✅ Templates d'email personnalisés et professionnels
 - ✅ Logs détaillés pour le debugging
 - ✅ Validation HMAC pour la sécurité
 - ✅ Interface de test intégrée
