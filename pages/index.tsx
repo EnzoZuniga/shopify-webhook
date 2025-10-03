@@ -119,6 +119,25 @@ export default function Home() {
         <p>Webhook opérationnel avec logs détaillés pour le debugging !</p>
         <p><strong>Vérifiez les logs dans Vercel Dashboard → Fonctions → Logs</strong></p>
       </div>
+
+      <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#e8f4fd', borderRadius: '8px' }}>
+        <h3>📧 Aperçu des emails :</h3>
+        <p>Voir à quoi ressemblent les emails envoyés automatiquement :</p>
+        <a 
+          href="/email-preview" 
+          style={{
+            display: 'inline-block',
+            padding: '10px 20px',
+            backgroundColor: '#0070f3',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '5px',
+            marginTop: '10px'
+          }}
+        >
+          👀 Voir l'aperçu des emails
+        </a>
+      </div>
     </div>
   );
 }
