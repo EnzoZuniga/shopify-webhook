@@ -38,16 +38,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: "Signature manquante" });
     }
 
-    // Validation HMAC obligatoire
+    // Validation de la signature Shopify (HMAC-SHA256)
     const bodyString = JSON.stringify(req.body);
     const hmac = crypto.createHmac("sha256", process.env.SHOPIFY_WEBHOOK_SECRET);
     hmac.update(bodyString, "utf8");
     const hash = hmac.digest("base64");
     
     if (hash !== shopifySignature) {
-      console.error("❌ Signature HMAC invalide - Possible tentative d'intrusion");
+      console.error("❌ Signature invalide - Possible tentative d'intrusion");
       console.error("Hash calculé:", hash);
       console.error("Hash reçu:", shopifySignature);
+      console.error("Secret utilisé:", process.env.SHOPIFY_WEBHOOK_SECRET ? "Configuré" : "Manquant");
       return res.status(401).json({ error: "Signature invalide" });
     }
     
