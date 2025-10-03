@@ -1,14 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-// Utiliser le service approprié selon l'environnement
-let ticketService: any;
-if (process.env.VERCEL) {
-  const { ticketServiceVercel } = require('../../../lib/ticket-service-vercel');
-  ticketService = ticketServiceVercel;
-} else {
-  const { ticketService: localTicketService } = require('../../../lib/ticket-service');
-  ticketService = localTicketService;
-}
+// Service de tickets avec Supabase
+import { ticketServiceSupabase } from '../../../lib/ticket-service-supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -16,8 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const stats = ticketService.getStats();
-    const allTickets = ticketService.getAllTickets();
+    const stats = await ticketServiceSupabase.getStats();
+    const allTickets = await ticketServiceSupabase.getAllTickets();
 
     return res.status(200).json({
       success: true,

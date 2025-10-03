@@ -1,14 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-// Utiliser le service approprié selon l'environnement
-let ticketService: any;
-if (process.env.VERCEL) {
-  const { ticketServiceVercel } = require('../../../../lib/ticket-service-vercel');
-  ticketService = ticketServiceVercel;
-} else {
-  const { ticketService: localTicketService } = require('../../../../lib/ticket-service');
-  ticketService = localTicketService;
-}
+// Service de tickets avec Supabase
+import { ticketServiceSupabase } from '../../../../lib/ticket-service-supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { ticketId } = req.query;
@@ -20,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (req.method === 'GET') {
       // Afficher les informations du ticket
-      const ticketInfo = ticketService.getTicketById(ticketId);
+      const ticketInfo = await ticketServiceSupabase.getTicketInfo(ticketId);
       
       if (!ticketInfo) {
         return res.status(404).json({ error: 'Ticket non trouvé' });
@@ -50,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Validateur manquant' });
       }
 
-      const success = ticketService.validateTicket(ticketId, validatedBy, notes);
+      const success = await ticketServiceSupabase.validateTicket(ticketId, validatedBy, notes);
 
       if (success) {
         return res.status(200).json({
@@ -66,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     } else if (req.method === 'PUT') {
       // Marquer comme utilisé
-      const success = ticketService.markTicketAsUsed(ticketId);
+      const success = await ticketServiceSupabase.markTicketAsUsed(ticketId);
 
       if (success) {
         return res.status(200).json({

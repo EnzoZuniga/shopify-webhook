@@ -1,21 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { OrderData } from '../../../src/email-templates';
 
-// Utiliser le service approprié selon l'environnement
-let ticketService: any;
-if (process.env.SUPABASE_URL) {
-  // Si Supabase est configuré, l'utiliser (recommandé)
-  const { ticketServiceSupabase } = require('../../../lib/ticket-service-supabase');
-  ticketService = ticketServiceSupabase;
-} else if (process.env.VERCEL) {
-  // Sur Vercel sans Supabase, utiliser le service JSON
-  const { ticketServiceVercel } = require('../../../lib/ticket-service-vercel');
-  ticketService = ticketServiceVercel;
-} else {
-  // En local, utiliser SQLite
-  const { ticketService: localTicketService } = require('../../../lib/ticket-service');
-  ticketService = localTicketService;
-}
+// Service de tickets avec Supabase
+import { ticketServiceSupabase } from '../../../lib/ticket-service-supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -30,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Générer les tickets pour cette commande
-    const tickets = await ticketService.generateTicketsForOrder({
+    const tickets = await ticketServiceSupabase.generateTicketsForOrder({
       orderId: orderData.id,
       orderNumber: orderData.order_number,
       customerEmail: orderData.customer.email,

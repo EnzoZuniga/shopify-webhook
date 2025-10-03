@@ -10,7 +10,7 @@ Système complet de gestion de tickets avec QR codes uniques pour les événemen
 - **Tickets individuels** avec QR codes uniques
 - **Support multi-tickets** par commande
 - **Statuts** : En attente, Validé, Utilisé, Expiré
-- **Base de données SQLite** performante
+- **Base de données Supabase** PostgreSQL
 
 ### 📧 Emails automatiques
 - **Génération automatique** lors des commandes Shopify
@@ -35,6 +35,7 @@ Système complet de gestion de tickets avec QR codes uniques pour les événemen
 ### Prérequis
 - Node.js 18+
 - Yarn ou npm
+- Compte Supabase (gratuit)
 - Compte Resend (pour les emails)
 
 ### Installation
@@ -61,8 +62,14 @@ RESEND_API_KEY=your_resend_api_key
 FROM_EMAIL=noreply@yourdomain.com
 ADMIN_EMAIL=admin@yourdomain.com
 
+# Supabase (base de données)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
 # Application
 NEXT_PUBLIC_BASE_URL=https://yourdomain.com
+ALLOWED_ORIGINS=https://yourdomain.com,https://your-app.vercel.app
 ```
 
 ## 🎯 Utilisation
@@ -81,34 +88,45 @@ NEXT_PUBLIC_BASE_URL=https://yourdomain.com
 - **`/api/ticket/stats`** - Statistiques des tickets
 - **`/api/shopify/webhook`** - Webhook Shopify
 
-## 🏗️ Architecture
+## 🗄️ Base de Données Supabase
 
-### Base de données
-- **SQLite** avec tables optimisées
-- **Index** pour les performances
-- **Transactions ACID** sécurisées
-- **Migration automatique** des données
-
-### Structure des tickets
+### Configuration
+1. Créer un projet sur [supabase.com](https://supabase.com)
+2. Exécuter le script SQL dans l'éditeur SQL :
 ```sql
-tickets:
-- id (TEXT PRIMARY KEY)
-- orderId (INTEGER)
-- orderNumber (INTEGER)
-- ticketId (TEXT UNIQUE) -- Identifiant unique
-- customerEmail (TEXT)
-- ticketTitle (TEXT)
-- qrCodeData (TEXT) -- QR code base64
-- status (TEXT) -- pending/validated/used/expired
-- createdAt, validatedAt, usedAt, validatedBy
+-- Voir scripts/setup-supabase.sql
 ```
 
-### Workflow complet
-1. **Commande payée** → Webhook Shopify
-2. **Génération tickets** → QR codes individuels
-3. **Email automatique** → Templates avec QR codes
-4. **Validation mobile** → Interface scanner
-5. **Suivi admin** → Dashboard temps réel
+### Structure des tables
+```sql
+-- Table principale des tickets
+CREATE TABLE tickets (
+  id TEXT PRIMARY KEY,
+  orderId INTEGER,
+  orderNumber INTEGER,
+  ticketId TEXT UNIQUE,
+  customerEmail TEXT,
+  ticketTitle TEXT,
+  quantity INTEGER,
+  price TEXT,
+  currency TEXT,
+  qrCodeData TEXT,
+  status TEXT,
+  createdAt TIMESTAMP,
+  validatedAt TIMESTAMP,
+  usedAt TIMESTAMP,
+  validatedBy TEXT
+);
+
+-- Table des validations
+CREATE TABLE ticket_validations (
+  id TEXT PRIMARY KEY,
+  ticketId TEXT,
+  validatedBy TEXT,
+  validatedAt TIMESTAMP,
+  notes TEXT
+);
+```
 
 ## 📱 Interface mobile
 
@@ -151,15 +169,15 @@ yarn lint         # Linting
 ### Structure du code
 ```
 lib/
-├── database-sqlite.ts    # Base de données SQLite
-├── ticket-service.ts     # Service tickets
-└── email.ts             # Service emails
+├── database-supabase.ts    # Base de données Supabase
+├── ticket-service-supabase.ts # Service tickets
+└── email.ts               # Service emails
 
 pages/
-├── api/                 # API endpoints
-├── admin/              # Interface admin
-├── mobile-simple.tsx   # Interface mobile
-└── test-*.tsx         # Pages de test
+├── api/                   # API endpoints
+├── admin/                # Interface admin
+├── mobile-simple.tsx     # Interface mobile
+└── test-*.tsx           # Pages de test
 ```
 
 ## 📊 Monitoring et logs
@@ -188,7 +206,7 @@ vercel --prod
 ```
 
 ### Autres plateformes
-- **Heroku** : Compatible
+- **Netlify** : Compatible
 - **Railway** : Compatible
 - **Docker** : Supporté
 
@@ -196,12 +214,12 @@ vercel --prod
 
 ### Sécurité
 - **Validation HMAC** des webhooks
-- **Transactions ACID** pour la cohérence
+- **CORS sécurisé** configuré
 - **Gestion d'erreurs** robuste
 - **Logs sécurisés** sans données sensibles
 
 ### Performance
-- **SQLite optimisé** avec index
+- **Supabase optimisé** avec index
 - **Requêtes préparées** pour la sécurité
 - **Cache intelligent** des données
 - **Compression** des images QR codes
