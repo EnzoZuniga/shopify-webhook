@@ -39,19 +39,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Validation de la signature Shopify (HMAC-SHA256)
-    // TEMPORAIRE : Désactiver la validation pour tester les emails
-    console.log("⚠️ Validation HMAC temporairement désactivée pour les tests");
-    console.log("🔐 Signature reçue:", shopifySignature);
-    console.log("🔐 Secret configuré:", process.env.SHOPIFY_WEBHOOK_SECRET ? "Oui" : "Non");
+    // Utiliser le body brut tel qu'il est reçu par Shopify
+    const bodyString = JSON.stringify(req.body);
+    const hmac = crypto.createHmac("sha256", process.env.SHOPIFY_WEBHOOK_SECRET);
+    hmac.update(bodyString, "utf8");
+    const hash = hmac.digest("base64");
     
-    // TODO: Réactiver la validation HMAC une fois les emails testés
-    // const bodyString = JSON.stringify(req.body);
-    // const hmac = crypto.createHmac("sha256", process.env.SHOPIFY_WEBHOOK_SECRET);
-    // hmac.update(bodyString, "utf8");
-    // const hash = hmac.digest("base64");
-    // if (hash !== shopifySignature) { ... }
+    if (hash !== shopifySignature) {
+      console.error("❌ Signature invalide - Possible tentative d'intrusion");
+      console.error("Hash calculé:", hash);
+      console.error("Hash reçu:", shopifySignature);
+      console.error("Secret utilisé:", process.env.SHOPIFY_WEBHOOK_SECRET ? "Configuré" : "Manquant");
+      console.error("Body utilisé pour le hash:", bodyString.substring(0, 100) + "...");
+      return res.status(401).json({ error: "Signature invalide" });
+    }
     
-    console.log("✅ Webhook accepté (validation HMAC désactivée)");
+    console.log("✅ Signature HMAC valide - Webhook authentifié");
 
     // Lire le JSON envoyé par Shopify
     const body = req.body;
