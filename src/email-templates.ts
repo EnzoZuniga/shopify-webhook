@@ -162,7 +162,7 @@ export const emailStyles = `
   </style>
 `;
 
-export const customerEmailTemplate = (orderData: OrderData) => `
+export const customerEmailTemplate = (orderData: OrderData, tickets?: any[]) => `
   <!DOCTYPE html>
   <html>
   <head>
@@ -181,13 +181,65 @@ export const customerEmailTemplate = (orderData: OrderData) => `
         <div class="greeting">Hi,</div>
         
         <div class="ticket-info">
-          <div class="ticket-title">🎟️ Votre E-Ticket</div>
+          <div class="ticket-title">🎟️ Vos E-Tickets</div>
           <div class="ticket-details">
-            Voici votre <strong>e-ticket</strong> pour l'événement <strong>MR NJP Event's</strong>.
+            Voici vos <strong>e-tickets</strong> pour l'événement <strong>MR NJP Event's</strong>.
           </div>
           <div class="date-info">
             Commande #${orderData.order_number} - ${new Date(orderData.created_at).toLocaleDateString('fr-FR')}
           </div>
+          ${tickets && tickets.length > 0 ? `
+            <div style="margin: 20px 0;">
+              <div style="font-weight: bold; margin-bottom: 15px; color: #8B4513; text-align: center;">
+                🎫 Vos Tickets d'Entrée (${tickets.length} ticket${tickets.length > 1 ? 's' : ''})
+              </div>
+              ${tickets.map((ticket, index) => `
+                <div style="
+                  border: 2px solid #8B4513; 
+                  border-radius: 12px; 
+                  padding: 20px; 
+                  margin: 15px 0; 
+                  background: linear-gradient(135deg, #FFF8E1 0%, #FDF8ED 100%);
+                  box-shadow: 0 4px 8px rgba(139, 69, 19, 0.1);
+                ">
+                  <div style="text-align: center;">
+                    <div style="font-weight: bold; color: #8B4513; margin-bottom: 10px; font-size: 16px;">
+                      🎫 Ticket ${index + 1}: ${ticket.ticketTitle}
+                    </div>
+                    <div style="margin: 15px 0;">
+                      <img src="${ticket.qrCodeData}" alt="QR Code Ticket ${index + 1}" style="
+                        width: 120px; 
+                        height: 120px; 
+                        border: 2px solid #8B4513; 
+                        border-radius: 8px; 
+                        background: white; 
+                        padding: 8px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                      ">
+                    </div>
+                    <div style="font-size: 11px; color: #666; margin-top: 8px;">
+                      ID: ${ticket.ticketId}
+                    </div>
+                    <div style="font-size: 12px; color: #8B4513; margin-top: 5px; font-weight: bold;">
+                      Présentez ce QR code à l'entrée
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+              <div style="
+                background: #FFE0B2; 
+                border-left: 4px solid #8B4513; 
+                padding: 12px; 
+                margin: 20px 0; 
+                border-radius: 0 8px 8px 0;
+                font-size: 13px;
+                color: #5D4037;
+              ">
+                <strong>📱 Important :</strong> Chaque ticket a un QR code unique. 
+                ${tickets.length > 1 ? 'Présentez le bon QR code pour chaque personne.' : 'Gardez ce ticket avec vous.'}
+              </div>
+            </div>
+          ` : ''}
         </div>
         
         <div class="ticket-details">

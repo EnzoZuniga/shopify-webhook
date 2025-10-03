@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_BASE_URL": "@next_public_base_url"
+    }
+  }
+}

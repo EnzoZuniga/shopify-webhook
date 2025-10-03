@@ -1,133 +1,233 @@
-# 🎯 Webhook Shopify - Debugging & Monitoring
+# 🎫 MR NJP Event's - Système de Tickets avec QR Codes
 
-Un webhook Shopify robuste avec logs détaillés et validation de sécurité pour recevoir les commandes.
+## 📋 Vue d'ensemble
+
+Système complet de gestion de tickets avec QR codes uniques pour les événements MR NJP Event's. Chaque ticket génère un QR code individuel pour une validation sécurisée.
+
+## ✨ Fonctionnalités
+
+### 🎫 Gestion des tickets
+- **Tickets individuels** avec QR codes uniques
+- **Support multi-tickets** par commande
+- **Statuts** : En attente, Validé, Utilisé, Expiré
+- **Base de données SQLite** performante
+
+### 📧 Emails automatiques
+- **Génération automatique** lors des commandes Shopify
+- **Templates professionnels** avec QR codes
+- **Design responsive** pour mobile et desktop
+- **Intégration** avec Resend
+
+### 📱 Interface mobile
+- **Scanner mobile** pour validation
+- **Interface responsive** optimisée
+- **Validation en temps réel**
+- **Gestion des erreurs** intuitive
+
+### 👨‍💼 Interface admin
+- **Dashboard** avec statistiques
+- **Gestion des tickets** en temps réel
+- **Validation manuelle** des tickets
+- **Suivi complet** des statuts
 
 ## 🚀 Installation
 
-1. Installez les dépendances :
-```bash
-npm install
-```
+### Prérequis
+- Node.js 18+
+- Yarn ou npm
+- Compte Resend (pour les emails)
 
-2. Configurez les variables d'environnement :
+### Installation
 ```bash
+# Cloner le projet
+git clone <repository-url>
+cd shopify-webhook
+
+# Installer les dépendances
+yarn install
+
+# Configurer les variables d'environnement
 cp env.example .env.local
-# Éditez .env.local avec vos valeurs
+# Éditer .env.local avec vos clés API
 ```
 
-3. Lancez le serveur de développement :
+### Variables d'environnement
+```env
+# Shopify
+SHOPIFY_WEBHOOK_SECRET=your_webhook_secret
+
+# Resend (emails)
+RESEND_API_KEY=your_resend_api_key
+FROM_EMAIL=noreply@yourdomain.com
+ADMIN_EMAIL=admin@yourdomain.com
+
+# Application
+NEXT_PUBLIC_BASE_URL=https://yourdomain.com
+```
+
+## 🎯 Utilisation
+
+### Pages principales
+- **`/`** - Page d'accueil avec liens
+- **`/test-tickets`** - Test de génération de tickets
+- **`/test-mobile`** - Test interface mobile
+- **`/mobile-simple`** - Interface mobile de validation
+- **`/admin/qr-codes`** - Interface admin
+- **`/email-preview`** - Aperçu des emails
+
+### API Endpoints
+- **`/api/ticket/generate`** - Génération de tickets
+- **`/api/ticket/validate/[ticketId]`** - Validation de tickets
+- **`/api/ticket/stats`** - Statistiques des tickets
+- **`/api/shopify/webhook`** - Webhook Shopify
+
+## 🏗️ Architecture
+
+### Base de données
+- **SQLite** avec tables optimisées
+- **Index** pour les performances
+- **Transactions ACID** sécurisées
+- **Migration automatique** des données
+
+### Structure des tickets
+```sql
+tickets:
+- id (TEXT PRIMARY KEY)
+- orderId (INTEGER)
+- orderNumber (INTEGER)
+- ticketId (TEXT UNIQUE) -- Identifiant unique
+- customerEmail (TEXT)
+- ticketTitle (TEXT)
+- qrCodeData (TEXT) -- QR code base64
+- status (TEXT) -- pending/validated/used/expired
+- createdAt, validatedAt, usedAt, validatedBy
+```
+
+### Workflow complet
+1. **Commande payée** → Webhook Shopify
+2. **Génération tickets** → QR codes individuels
+3. **Email automatique** → Templates avec QR codes
+4. **Validation mobile** → Interface scanner
+5. **Suivi admin** → Dashboard temps réel
+
+## 📱 Interface mobile
+
+### Scanner de tickets
+- **Saisie manuelle** de l'ID du ticket
+- **Interface responsive** optimisée mobile
+- **Validation en temps réel**
+- **Feedback visuel** des actions
+
+### Utilisation
+1. Ouvrir `/mobile-simple` sur téléphone
+2. Saisir l'ID du ticket (visible sous le QR code)
+3. Valider ou marquer comme utilisé
+4. Confirmer l'action
+
+## 🎨 Design et UX
+
+### Thème MR NJP Event's
+- **Couleurs** : Brun (#8B4513) et crème (#FDF8ED)
+- **Typographie** : Moderne et lisible
+- **Responsive** : Mobile-first design
+- **Accessibilité** : Contraste et tailles optimisées
+
+### Templates email
+- **Design professionnel** avec logo
+- **QR codes intégrés** pour chaque ticket
+- **Instructions claires** pour l'utilisation
+- **Compatible** tous clients email
+
+## 🔧 Développement
+
+### Scripts disponibles
 ```bash
-npm run dev
+yarn dev          # Développement
+yarn build        # Production
+yarn start        # Serveur production
+yarn lint         # Linting
 ```
 
-## 🔧 Configuration Shopify
+### Structure du code
+```
+lib/
+├── database-sqlite.ts    # Base de données SQLite
+├── ticket-service.ts     # Service tickets
+└── email.ts             # Service emails
 
-1. Dans votre admin Shopify, allez dans **Paramètres > Notifications**
-2. Créez un nouveau webhook avec :
-   - **URL** : `https://votre-domaine.vercel.app/api/shopify/webhook`
-   - **Événement** : `orders/paid`
-   - **Format** : `JSON`
-   - **Secret** : (optionnel) Ajoutez un secret pour la sécurité
+pages/
+├── api/                 # API endpoints
+├── admin/              # Interface admin
+├── mobile-simple.tsx   # Interface mobile
+└── test-*.tsx         # Pages de test
+```
 
-## 🔍 Debugging - Pourquoi vous ne recevez pas les webhooks
+## 📊 Monitoring et logs
 
-### 1. Vérifiez l'URL du webhook
-- ✅ L'URL doit être accessible publiquement
-- ✅ L'URL doit pointer vers `/api/shopify/webhook`
-- ✅ Testez l'URL avec un navigateur (doit retourner "Méthode non autorisée")
+### Logs automatiques
+- **Génération** de tickets
+- **Validation** des tickets
+- **Erreurs** et exceptions
+- **Performance** des requêtes
 
-### 2. Vérifiez les logs Vercel
+### Statistiques
+- **Tickets totaux** par statut
+- **Validations** par validateur
+- **Performance** en temps réel
+- **Erreurs** et taux de succès
+
+## 🚀 Déploiement
+
+### Vercel (recommandé)
 ```bash
-# Dans Vercel Dashboard :
-# 1. Allez dans votre projet
-# 2. Cliquez sur "Functions"
-# 3. Cliquez sur "View Function Logs"
-# 4. Cherchez les logs avec 🔍, 📩, ou ❌
+# Déployer sur Vercel
+vercel --prod
+
+# Variables d'environnement
+# Configurer dans Vercel Dashboard
 ```
 
-### 3. Testez localement
-```bash
-# Testez votre webhook localement
-curl -X POST http://localhost:3000/api/shopify/webhook \
-  -H "Content-Type: application/json" \
-  -H "x-shopify-topic: orders/paid" \
-  -H "x-shopify-shop-domain: test.myshopify.com" \
-  -d '{"id": 123, "order_number": "1001"}'
-```
+### Autres plateformes
+- **Heroku** : Compatible
+- **Railway** : Compatible
+- **Docker** : Supporté
 
-### 4. Vérifiez la configuration Shopify
-- ✅ L'événement est bien `orders/paid`
-- ✅ Le format est bien `JSON`
-- ✅ Le webhook est actif (pas en pause)
-- ✅ Votre boutique a des commandes payées récentes
+## 🎉 Fonctionnalités avancées
 
-## 📊 Logs détaillés
+### Sécurité
+- **Validation HMAC** des webhooks
+- **Transactions ACID** pour la cohérence
+- **Gestion d'erreurs** robuste
+- **Logs sécurisés** sans données sensibles
 
-Le webhook log maintenant :
-- 🔍 Toutes les requêtes entrantes
-- 🔐 Headers Shopify (signature, topic, shop)
-- 📩 Données reçues avec timestamp
-- 💰 Détails des commandes payées
-- ❌ Erreurs détaillées avec stack trace
+### Performance
+- **SQLite optimisé** avec index
+- **Requêtes préparées** pour la sécurité
+- **Cache intelligent** des données
+- **Compression** des images QR codes
 
-## 🛡️ Sécurité (OBLIGATOIRE)
+### Évolutivité
+- **Support** de milliers de tickets
+- **API REST** standardisée
+- **Architecture modulaire**
+- **Tests intégrés**
 
-- ✅ **Validation HMAC OBLIGATOIRE** (webhook refuse les requêtes sans secret)
-- ✅ **Vérification des headers Shopify**
-- ✅ **Protection contre les intrusions** (logs détaillés des tentatives)
-- ✅ **Gestion d'erreurs robuste**
+## 📞 Support
 
-### ⚠️ Configuration de sécurité requise :
-```bash
-# OBLIGATOIRE - Sans ce secret, le webhook ne fonctionne pas
-SHOPIFY_WEBHOOK_SECRET=votre_secret_shopify
-```
+### Documentation
+- **README** : Guide complet
+- **Code** : Commentaires détaillés
+- **API** : Endpoints documentés
+- **Tests** : Pages de test intégrées
 
-## 📁 Structure
+### Débogage
+- **Logs détaillés** dans la console
+- **Pages de test** pour validation
+- **Interface admin** pour monitoring
+- **API stats** pour les métriques
 
-```
-├── pages/api/shopify/webhook.ts  # Webhook principal avec logs
-├── pages/index.tsx               # Interface de test
-├── env.example                   # Variables d'environnement
-└── README.md                     # Ce fichier
-```
+---
 
-## 🧪 Test
+**Système prêt pour la production !** 🚀
 
-1. **Test local** : Utilisez le bouton "Tester le webhook" sur la page d'accueil
-2. **Test Shopify** : Faites une commande test dans votre boutique
-3. **Vérifiez les logs** : Dans Vercel Dashboard → Functions → Logs
-
-## 📧 Configuration Email
-
-### 1. Créer un compte Resend
-1. Allez sur [https://resend.com](https://resend.com)
-2. Créez un compte gratuit
-3. Vérifiez votre domaine d'email
-4. Obtenez votre clé API
-
-### 2. Variables d'environnement
-```bash
-# Copiez env.example vers .env.local
-cp env.example .env.local
-
-# Configurez vos variables
-RESEND_API_KEY=re_your_api_key_here
-FROM_EMAIL=noreply@votre-domaine.com
-ADMIN_EMAIL=admin@votre-domaine.com
-```
-
-### 3. Types d'emails envoyés
-- ✅ **Email de confirmation client** : Détails de la commande, articles, total
-- ✅ **Notification admin** : Résumé de la nouvelle commande reçue
-
-## ✅ Fonctionnalités
-
-- ✅ Reçoit les données de commande Shopify
-- ✅ Envoie des emails automatiques (client + admin)
-- ✅ Templates d'email personnalisés et professionnels
-- ✅ Logs détaillés pour le debugging
-- ✅ Validation HMAC pour la sécurité
-- ✅ Interface de test intégrée
-- ✅ Gestion d'erreurs robuste
-- ✅ Retourne `{ success: true }` si tout va bien
+*Développé pour MR NJP Event's - Gestion complète des tickets avec QR codes*

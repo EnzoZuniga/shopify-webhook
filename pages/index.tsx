@@ -132,11 +132,89 @@ export default function Home() {
             color: 'white',
             textDecoration: 'none',
             borderRadius: '5px',
-            marginTop: '10px'
+            marginTop: '10px',
+            marginRight: '10px'
           }}
         >
           👀 Voir l'aperçu des emails
         </a>
+      </div>
+
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '20px', 
+        backgroundColor: '#f0f8ff', 
+        borderRadius: '8px' 
+      }}>
+        <h3>🔍 Gestion des QR Codes :</h3>
+        <p>Nouveau système de QR codes intégré pour chaque commande :</p>
+        <ul>
+          <li>🎫 <strong>QR codes uniques</strong> générés automatiquement</li>
+          <li>📱 <strong>Validation mobile</strong> pour l'entrée à l'événement</li>
+          <li>📊 <strong>Suivi des statuts</strong> (en attente, validé, utilisé)</li>
+          <li>👨‍💼 <strong>Interface admin</strong> pour la gestion</li>
+        </ul>
+        <div style={{ marginTop: '15px' }}>
+          <a 
+            href="/test-tickets" 
+            style={{ 
+              display: 'inline-block',
+              padding: '10px 20px', 
+              background: '#17a2b8', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '4px',
+              marginRight: '10px',
+              marginBottom: '10px'
+            }}
+          >
+            🎫 Tester les Tickets
+          </a>
+          <a 
+            href="/mobile-simple" 
+            style={{ 
+              display: 'inline-block',
+              padding: '10px 20px', 
+              background: '#6f42c1', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '4px',
+              marginRight: '10px',
+              marginBottom: '10px'
+            }}
+          >
+            📱 Scanner Mobile
+          </a>
+          <a 
+            href="/test-mobile" 
+            style={{ 
+              display: 'inline-block',
+              padding: '10px 20px', 
+              background: '#fd7e14', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '4px',
+              marginRight: '10px',
+              marginBottom: '10px'
+            }}
+          >
+            🧪 Test Mobile
+          </a>
+          <a 
+            href="/admin/qr-codes" 
+            style={{ 
+              display: 'inline-block',
+              padding: '10px 20px', 
+              background: '#28a745', 
+              color: 'white', 
+              textDecoration: 'none', 
+              borderRadius: '4px',
+              marginBottom: '10px'
+            }}
+          >
+            👨‍💼 Interface Admin
+          </a>
+        </div>
       </div>
     </div>
   );
