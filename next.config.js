@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: ".",
   images: {
     domains: ['localhost'],
     formats: ['image/webp', 'image/avif']

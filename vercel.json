@@ -14,6 +14,5 @@
   },
   "buildCommand": "yarn build",
   "installCommand": "yarn install",
-  "framework": "nextjs",
-  "outputFileTracingRoot": "."
+  "framework": "nextjs"
 }
