@@ -1,7 +1,7 @@
 {
   "functions": {
     "pages/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 60
     }
   },
   "env": {
@@ -11,5 +11,9 @@
     "env": {
       "NEXT_PUBLIC_BASE_URL": "@next_public_base_url"
     }
-  }
+  },
+  "buildCommand": "yarn build",
+  "installCommand": "yarn install",
+  "framework": "nextjs",
+  "outputFileTracingRoot": "."
 }

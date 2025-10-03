@@ -1,5 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ticketService } from '../../../../lib/ticket-service';
+
+// Utiliser le service approprié selon l'environnement
+let ticketService: any;
+if (process.env.VERCEL) {
+  const { ticketServiceVercel } = require('../../../../lib/ticket-service-vercel');
+  ticketService = ticketServiceVercel;
+} else {
+  const { ticketService: localTicketService } = require('../../../../lib/ticket-service');
+  ticketService = localTicketService;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { ticketId } = req.query;

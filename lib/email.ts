@@ -1,12 +1,32 @@
 import { Resend } from 'resend';
-import { 
-  OrderData, 
-  customerEmailTemplate, 
-  customerEmailText, 
-  adminEmailTemplate, 
-  adminEmailText 
+import {
+  OrderData,
+  customerEmailTemplate,
+  customerEmailText,
+  adminEmailTemplate,
+  adminEmailText
 } from '../src/email-templates';
-import { ticketService } from './ticket-service';
+
+// Utiliser le service approprié selon l'environnement
+let ticketService: any;
+if (process.env.SUPABASE_URL) {
+  // Si Supabase est configuré, l'utiliser (recommandé)
+  const { ticketServiceSupabase } = require('./ticket-service-supabase');
+  ticketService = ticketServiceSupabase;
+} else if (process.env.VERCEL) {
+  // Sur Vercel sans Supabase, utiliser le service JSON
+  const { ticketServiceVercel } = require('./ticket-service-vercel');
+  ticketService = ticketServiceVercel;
+} else {
+  // En local, utiliser SQLite
+  const { ticketService: localTicketService } = require('./ticket-service');
+  ticketService = localTicketService;
+}
+
+// Validation des variables d'environnement critiques
+if (!process.env.RESEND_API_KEY) {
+  throw new Error('RESEND_API_KEY is required');
+}
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -44,7 +64,7 @@ export async function sendOrderConfirmationEmail(orderData: OrderData) {
       success: true, 
       emailId: result.data?.id, 
       ticketsCount: tickets.length,
-      tickets: tickets.map(t => ({ id: t.id, ticketId: t.ticketId }))
+        tickets: tickets.map((t: any) => ({ id: t.id, ticketId: t.ticketId }))
     };
 
   } catch (error) {

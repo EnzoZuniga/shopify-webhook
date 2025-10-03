@@ -136,13 +136,13 @@ export class TicketService {
   // Obtenir un ticket par son ID unique
   getTicketById(ticketId: string): TicketData | null {
     const stmt = this.db.prepare('SELECT * FROM tickets WHERE ticketId = ?');
-    return stmt.get(ticketId);
+    return stmt.get(ticketId) as TicketData | null;
   }
 
   // Obtenir tous les tickets d'une commande
   getTicketsByOrderNumber(orderNumber: number): TicketData[] {
     const stmt = this.db.prepare('SELECT * FROM tickets WHERE orderNumber = ? ORDER BY createdAt ASC');
-    return stmt.all(orderNumber);
+    return stmt.all(orderNumber) as TicketData[];
   }
 
   // Valider un ticket
@@ -213,7 +213,7 @@ export class TicketService {
   // Obtenir tous les tickets
   getAllTickets(): TicketData[] {
     const stmt = this.db.prepare('SELECT * FROM tickets ORDER BY createdAt DESC');
-    return stmt.all();
+    return stmt.all() as TicketData[];
   }
 
   // Obtenir les statistiques
@@ -226,12 +226,12 @@ export class TicketService {
     const validationsStmt = this.db.prepare('SELECT COUNT(*) as count FROM ticket_validations');
 
     return {
-      total: totalStmt.get().count,
-      pending: pendingStmt.get().count,
-      validated: validatedStmt.get().count,
-      used: usedStmt.get().count,
-      expired: expiredStmt.get().count,
-      totalValidations: validationsStmt.get().count
+      total: (totalStmt.get() as { count: number }).count,
+      pending: (pendingStmt.get() as { count: number }).count,
+      validated: (validatedStmt.get() as { count: number }).count,
+      used: (usedStmt.get() as { count: number }).count,
+      expired: (expiredStmt.get() as { count: number }).count,
+      totalValidations: (validationsStmt.get() as { count: number }).count
     };
   }
 

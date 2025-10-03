@@ -1,0 +1,28 @@
+# Fichiers à ignorer lors du déploiement Vercel
+
+# Base de données locale
+data/qrcodes.db
+data/backup/
+
+# Fichiers de développement
+.env.local
+.env.development.local
+
+# Logs
+*.log
+logs/
+
+# Cache
+.next/cache/
+node_modules/.cache/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+
+# Documentation de développement
+DEVELOPMENT.md
+CLEANUP_SUMMARY.md
+
+# Scripts de nettoyage
+cleanup.sh

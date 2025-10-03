@@ -214,12 +214,12 @@ class SQLiteDatabase {
     const validationsStmt = this.db.prepare('SELECT COUNT(*) as count FROM validations');
 
     return {
-      total: totalStmt.get().count,
-      pending: pendingStmt.get().count,
-      validated: validatedStmt.get().count,
-      used: usedStmt.get().count,
-      expired: expiredStmt.get().count,
-      totalValidations: validationsStmt.get().count
+      total: (totalStmt.get() as { count: number }).count,
+      pending: (pendingStmt.get() as { count: number }).count,
+      validated: (validatedStmt.get() as { count: number }).count,
+      used: (usedStmt.get() as { count: number }).count,
+      expired: (expiredStmt.get() as { count: number }).count,
+      totalValidations: (validationsStmt.get() as { count: number }).count
     };
   }
 

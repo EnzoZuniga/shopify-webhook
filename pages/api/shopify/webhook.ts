@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error("❌ Signature HMAC invalide - Possible tentative d'intrusion");
       console.error("Hash calculé:", hash);
       console.error("Hash reçu:", shopifySignature);
-      console.error("Secret utilisé:", process.env.SHOPIFY_WEBHOOK_SECRET ? "Configuré" : "Manquant");
+      console.error("Secret configuré:", process.env.SHOPIFY_WEBHOOK_SECRET ? "Oui" : "Non");
       console.error("Body brut utilisé:", rawBody.substring(0, 100) + "...");
       return res.status(401).json({ error: "Signature invalide" });
     }
