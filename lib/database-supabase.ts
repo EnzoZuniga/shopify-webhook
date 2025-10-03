@@ -46,9 +46,25 @@ class SupabaseDatabase {
   // Créer un ticket
   async createTicket(ticket: TicketData): Promise<boolean> {
     try {
+      // Mapper les noms de colonnes camelCase vers snake_case
+      const dbTicket = {
+        id: ticket.id,
+        ticket_id: ticket.ticketId,
+        order_id: ticket.orderId,
+        order_number: ticket.orderNumber,
+        customer_email: ticket.customerEmail,
+        ticket_title: ticket.ticketTitle,
+        qr_code_data: ticket.qrCodeData,
+        status: ticket.status,
+        created_at: ticket.createdAt,
+        validated_at: ticket.validatedAt,
+        used_at: ticket.usedAt,
+        validated_by: ticket.validatedBy
+      };
+
       const { error } = await this.supabase
         .from('tickets')
-        .insert([ticket]);
+        .insert([dbTicket]);
 
       if (error) {
         console.error('Erreur Supabase:', error);
@@ -68,7 +84,7 @@ class SupabaseDatabase {
       const { data, error } = await this.supabase
         .from('tickets')
         .select('*')
-        .eq('ticketId', ticketId)
+        .eq('ticket_id', ticketId)
         .single();
 
       if (error) {
@@ -76,7 +92,26 @@ class SupabaseDatabase {
         return null;
       }
 
-      return data;
+      if (!data) return null;
+
+      // Mapper les noms de colonnes snake_case vers camelCase
+      return {
+        id: data.id,
+        orderId: data.order_id,
+        orderNumber: data.order_number,
+        ticketId: data.ticket_id,
+        customerEmail: data.customer_email,
+        ticketTitle: data.ticket_title,
+        quantity: data.quantity || 1,
+        price: data.price || '0.00',
+        currency: data.currency || 'EUR',
+        qrCodeData: data.qr_code_data,
+        status: data.status,
+        createdAt: data.created_at,
+        validatedAt: data.validated_at,
+        usedAt: data.used_at,
+        validatedBy: data.validated_by
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération du ticket:', error);
       return null;
@@ -90,16 +125,16 @@ class SupabaseDatabase {
       const updateData: any = { status };
 
       if (status === 'validated') {
-        updateData.validatedAt = now;
-        updateData.validatedBy = validatedBy;
+        updateData.validated_at = now;
+        updateData.validated_by = validatedBy;
       } else if (status === 'used') {
-        updateData.usedAt = now;
+        updateData.used_at = now;
       }
 
       const { error } = await this.supabase
         .from('tickets')
         .update(updateData)
-        .eq('ticketId', ticketId);
+        .eq('ticket_id', ticketId);
 
       if (error) {
         console.error('Erreur Supabase:', error);
@@ -127,9 +162,18 @@ class SupabaseDatabase {
   // Créer une validation
   async createValidation(validation: TicketValidation): Promise<boolean> {
     try {
+      // Mapper les noms de colonnes camelCase vers snake_case
+      const dbValidation = {
+        id: validation.id,
+        ticket_id: validation.ticketId,
+        validated_by: validation.validatedBy,
+        validated_at: validation.validatedAt,
+        notes: validation.notes
+      };
+
       const { error } = await this.supabase
         .from('ticket_validations')
-        .insert([validation]);
+        .insert([dbValidation]);
 
       if (error) {
         console.error('Erreur Supabase:', error);
@@ -149,14 +193,33 @@ class SupabaseDatabase {
       const { data, error } = await this.supabase
         .from('tickets')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Erreur Supabase:', error);
         return [];
       }
 
-      return data || [];
+      if (!data) return [];
+
+      // Mapper les données de la base vers notre interface
+      return data.map((item: any) => ({
+        id: item.id,
+        orderId: item.order_id,
+        orderNumber: item.order_number,
+        ticketId: item.ticket_id,
+        customerEmail: item.customer_email,
+        ticketTitle: item.ticket_title,
+        quantity: item.quantity || 1,
+        price: item.price || '0.00',
+        currency: item.currency || 'EUR',
+        qrCodeData: item.qr_code_data,
+        status: item.status,
+        createdAt: item.created_at,
+        validatedAt: item.validated_at,
+        usedAt: item.used_at,
+        validatedBy: item.validated_by
+      }));
     } catch (error) {
       console.error('Erreur lors de la récupération des tickets:', error);
       return [];
@@ -216,26 +279,45 @@ class SupabaseDatabase {
         query = query.eq('status', filters.status);
       }
       if (filters.orderNumber) {
-        query = query.eq('orderNumber', filters.orderNumber);
+        query = query.eq('order_number', filters.orderNumber);
       }
       if (filters.customerEmail) {
-        query = query.eq('customerEmail', filters.customerEmail);
+        query = query.eq('customer_email', filters.customerEmail);
       }
       if (filters.dateFrom) {
-        query = query.gte('createdAt', filters.dateFrom);
+        query = query.gte('created_at', filters.dateFrom);
       }
       if (filters.dateTo) {
-        query = query.lte('createdAt', filters.dateTo);
+        query = query.lte('created_at', filters.dateTo);
       }
 
-      const { data, error } = await query.order('createdAt', { ascending: false });
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
         console.error('Erreur Supabase:', error);
         return [];
       }
 
-      return data || [];
+      if (!data) return [];
+
+      // Mapper les données de la base vers notre interface
+      return data.map((item: any) => ({
+        id: item.id,
+        orderId: item.order_id,
+        orderNumber: item.order_number,
+        ticketId: item.ticket_id,
+        customerEmail: item.customer_email,
+        ticketTitle: item.ticket_title,
+        quantity: item.quantity || 1,
+        price: item.price || '0.00',
+        currency: item.currency || 'EUR',
+        qrCodeData: item.qr_code_data,
+        status: item.status,
+        createdAt: item.created_at,
+        validatedAt: item.validated_at,
+        usedAt: item.used_at,
+        validatedBy: item.validated_by
+      }));
     } catch (error) {
       console.error('Erreur lors de la recherche des tickets:', error);
       return [];
