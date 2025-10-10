@@ -213,6 +213,21 @@ export default function MobileSimple() {
             >
               📱 Scanner iPhone
             </a>
+            <a href="/mobile-scanner-simple" style={{ 
+              color: '#28a745', 
+              textDecoration: 'none',
+              fontSize: '14px',
+              padding: '8px 16px',
+              border: '1px solid #28a745',
+              borderRadius: '8px',
+              display: 'inline-block',
+              margin: '5px',
+              background: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+            }}>
+              🎥 Test Caméra Simple
+            </a>
           </div>
         </div>
 

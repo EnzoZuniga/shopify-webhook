@@ -53,88 +53,36 @@ export default function MobileScanneriPhone() {
     setError(null);
 
     try {
-      console.log('Démarrage du scanner pour iPhone...');
+      console.log('🎥 Démarrage caméra simple...');
       
-      // Vérifier d'abord les permissions
-      if (navigator.permissions) {
-        try {
-          const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
-          console.log('Permission caméra:', permission.state);
-          
-          if (permission.state === 'denied') {
-            setError('Permission caméra refusée. Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.');
-            setLoading(false);
-            return;
-          }
-        } catch (err) {
-          console.log('Impossible de vérifier les permissions:', err);
-        }
-      }
-      
-      // Configuration plus simple pour éviter les erreurs de permissions
+      // Contraintes ultra-simples (comme dans mobile-scanner-simple)
       const constraints = {
-        video: {
-          facingMode: 'environment' // Caméra arrière
-        },
+        video: true,
         audio: false
       };
 
-      console.log('Demande d\'accès à la caméra avec contraintes:', constraints);
-
-      // Demander l'accès à la caméra
+      console.log('Demande d\'accès caméra...');
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('Stream obtenu:', stream);
+      console.log('✅ Stream obtenu:', stream);
 
       streamRef.current = stream;
-      
-      if (!videoRef.current) {
-        throw new Error('Élément vidéo non trouvé');
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        setScannerActive(true);
+        setCameraPermission('granted');
+        console.log('✅ Caméra démarrée');
       }
 
-      // Configuration spécifique pour iOS Safari
-      videoRef.current.srcObject = stream;
-      videoRef.current.setAttribute('playsinline', 'true');
-      videoRef.current.setAttribute('webkit-playsinline', 'true');
-      videoRef.current.muted = true;
-      videoRef.current.controls = false;
-
-      // Attendre que la vidéo soit prête
-      await new Promise((resolve, reject) => {
-        if (!videoRef.current) {
-          reject(new Error('Élément vidéo non trouvé'));
-          return;
-        }
-
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Métadonnées vidéo chargées');
-          resolve(true);
-        };
-
-        videoRef.current.onerror = (e) => {
-          console.error('Erreur vidéo:', e);
-          reject(e);
-        };
-
-        // Démarrer la lecture
-        videoRef.current.play().then(() => {
-          console.log('Vidéo démarrée');
-          resolve(true);
-        }).catch((err) => {
-          console.error('Erreur lecture vidéo:', err);
-          reject(err);
-        });
-      });
-
-      setScannerActive(true);
-      setCameraPermission('granted');
-      setError(null);
-      console.log('Scanner démarré avec succès sur iPhone');
-
       // Démarrer la détection QR code avec ZXing
+      console.log('Initialisation de ZXing...');
       const { BrowserMultiFormatReader } = await import('@zxing/library');
       codeReaderRef.current = new BrowserMultiFormatReader();
+      console.log('ZXing initialisé');
 
       // Configuration pour iOS
+      console.log('Démarrage de la détection QR code...');
       codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result: any, err: any) => {
         if (result) {
           console.log('QR Code détecté:', result.text);
@@ -144,27 +92,11 @@ export default function MobileScanneriPhone() {
           console.error('Erreur de scan:', err);
         }
       });
+      console.log('Détection QR code démarrée');
 
     } catch (err) {
-      console.error('Erreur lors du démarrage du scanner:', err);
-      
-      let errorMessage = 'Impossible de démarrer le scanner.';
-      
-      if (err instanceof Error) {
-        if (err.name === 'NotAllowedError') {
-          errorMessage = '❌ Permission caméra refusée. Cliquez sur l\'icône caméra dans la barre d\'adresse et autorisez l\'accès.';
-        } else if (err.name === 'NotFoundError') {
-          errorMessage = '❌ Aucune caméra trouvée sur cet appareil.';
-        } else if (err.name === 'NotSupportedError') {
-          errorMessage = '❌ Votre navigateur ne supporte pas l\'accès à la caméra.';
-        } else if (err.name === 'OverconstrainedError') {
-          errorMessage = '❌ Contraintes caméra non supportées. Essayez avec une autre caméra.';
-        } else {
-          errorMessage = `❌ Erreur: ${err.message}`;
-        }
-      }
-      
-      setError(errorMessage);
+      console.error('❌ Erreur caméra:', err);
+      setError(err instanceof Error ? err.message : 'Erreur caméra');
       setCameraPermission('denied');
     } finally {
       setLoading(false);
