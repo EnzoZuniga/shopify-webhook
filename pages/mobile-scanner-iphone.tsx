@@ -55,15 +55,30 @@ export default function MobileScanneriPhone() {
     try {
       console.log('🎥 Démarrage caméra simple...');
       
-      // Contraintes ultra-simples (comme dans mobile-scanner-simple)
+      // Contraintes pour caméra arrière (environment = caméra arrière)
       const constraints = {
-        video: true,
+        video: {
+          facingMode: 'environment' // Force la caméra arrière
+        },
         audio: false
       };
 
-      console.log('Demande d\'accès caméra...');
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('✅ Stream obtenu:', stream);
+      console.log('Demande d\'accès caméra arrière...');
+      let stream;
+      
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('✅ Stream caméra arrière obtenu:', stream);
+      } catch (err) {
+        console.log('❌ Caméra arrière non disponible, fallback vers caméra avant...');
+        // Fallback vers caméra avant si arrière non disponible
+        const fallbackConstraints = {
+          video: true,
+          audio: false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        console.log('✅ Stream caméra avant obtenu:', stream);
+      }
 
       streamRef.current = stream;
 
@@ -77,22 +92,28 @@ export default function MobileScanneriPhone() {
 
       // Démarrer la détection QR code avec ZXing
       console.log('Initialisation de ZXing...');
-      const { BrowserMultiFormatReader } = await import('@zxing/library');
-      codeReaderRef.current = new BrowserMultiFormatReader();
-      console.log('ZXing initialisé');
+      const { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } = await import('@zxing/library');
+      
+      // Configuration optimisée pour QR codes
+      const hints = new Map();
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]);
+      hints.set(DecodeHintType.TRY_HARDER, true);
+      
+      codeReaderRef.current = new BrowserMultiFormatReader(hints);
+      console.log('ZXing initialisé avec configuration QR code');
 
       // Configuration pour iOS
       console.log('Démarrage de la détection QR code...');
       codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result: any, err: any) => {
         if (result) {
-          console.log('QR Code détecté:', result.text);
+          console.log('🎯 QR Code détecté:', result.text);
           handleQRCodeDetected(result.text);
         }
         if (err && !err.name?.includes('NotFoundException')) {
           console.error('Erreur de scan:', err);
         }
       });
-      console.log('Détection QR code démarrée');
+      console.log('✅ Détection QR code démarrée - Pointez vers un QR code');
 
     } catch (err) {
       console.error('❌ Erreur caméra:', err);
