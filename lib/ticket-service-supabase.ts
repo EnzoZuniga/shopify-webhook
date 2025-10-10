@@ -119,9 +119,10 @@ export class TicketServiceSupabase {
       return false;
     }
 
-    if (ticket.status !== 'validated') {
-      console.error(`Ticket doit être validé avant utilisation: ${ticketId}`);
-      return false;
+    // Vérifier si le ticket est déjà utilisé
+    if (ticket.status === 'used') {
+      console.log(`Ticket déjà utilisé: ${ticketId}`);
+      return true; // Considérer comme succès si déjà utilisé
     }
 
     const success = await supabaseDatabase.updateTicketStatus(ticketId, 'used');

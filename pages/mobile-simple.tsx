@@ -163,145 +163,24 @@ export default function MobileSimple() {
           <h1 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>📱 Validation Tickets</h1>
           <p style={{ margin: 0, opacity: 0.9 }}>MR NJP Event's - Scanner manuel</p>
           
-          {/* Scanner Buttons */}
+          {/* Scanner Button */}
           <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a
-              href="/mobile-scanner"
+              href="/qr-scanner"
               style={{
                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '12px',
-                padding: '12px 24px',
-                fontSize: '16px',
+                padding: '15px 30px',
+                fontSize: '18px',
                 fontWeight: 'bold',
                 display: 'inline-block',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease'
               }}
             >
-              📷 Scanner QR Code
-            </a>
-            <a
-              href="/mobile-scanner-v2"
-              style={{
-                background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 100%)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '12px',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-              }}
-            >
-              📷 Scanner ZXing V2
-            </a>
-            <a
-              href="/mobile-scanner-iphone"
-              style={{
-                background: 'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '12px',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-              }}
-            >
-              📱 Scanner iPhone
-            </a>
-            <a href="/mobile-scanner-simple" style={{ 
-              color: '#28a745', 
-              textDecoration: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              border: '1px solid #28a745',
-              borderRadius: '8px',
-              display: 'inline-block',
-              margin: '5px',
-              background: 'white',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-            }}>
-              🎥 Test Caméra Simple
-            </a>
-            <a href="/mobile-scanner-pc" style={{ 
-              color: '#6f42c1', 
-              textDecoration: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              border: '1px solid #6f42c1',
-              borderRadius: '8px',
-              display: 'inline-block',
-              margin: '5px',
-              background: 'white',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-            }}>
-              💻 Scanner PC
-            </a>
-            <a href="/mobile-scanner-unified" style={{
-              color: '#ff6b35',
-              textDecoration: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              border: '1px solid #ff6b35',
-              borderRadius: '8px',
-              display: 'inline-block',
-              margin: '5px',
-              background: 'white',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-            }}>
-              🚀 Scanner Unifié
-            </a>
-            <a href="/mobile-scanner-jsqr" style={{
-              color: '#4a90e2',
-              textDecoration: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              border: '1px solid #4a90e2',
-              borderRadius: '8px',
-              display: 'inline-block',
-              margin: '5px',
-              background: 'white',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-            }}>
-              📱 Scanner jsQR
-            </a>
-            <a href="/test-qr-debug" style={{
-              color: '#ff6b35',
-              textDecoration: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              border: '1px solid #ff6b35',
-              borderRadius: '8px',
-              display: 'inline-block',
-              margin: '5px',
-              background: 'white',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-            }}>
-              🔍 Debug QR Code
-            </a>
-            <a href="/mobile-scanner-final" style={{
-              color: '#28a745',
-              textDecoration: 'none',
-              fontSize: '14px',
-              padding: '8px 16px',
-              border: '1px solid #28a745',
-              borderRadius: '8px',
-              display: 'inline-block',
-              margin: '5px',
-              background: 'white',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-            }}>
-              🎯 Scanner Final
+              📱 Scanner QR Code
             </a>
           </div>
         </div>

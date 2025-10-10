@@ -31,7 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           createdAt: ticketInfo.createdAt,
           validatedAt: ticketInfo.validatedAt,
           usedAt: ticketInfo.usedAt,
-          validatedBy: ticketInfo.validatedBy
+          validatedBy: ticketInfo.validatedBy,
+          isUsed: ticketInfo.status === 'used'
         }
       });
 
@@ -62,9 +63,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const success = await ticketServiceSupabase.markTicketAsUsed(ticketId);
 
       if (success) {
+        // Récupérer les informations du ticket après le marquage
+        const ticketInfo = await ticketServiceSupabase.getTicketInfo(ticketId);
+        
         return res.status(200).json({
           success: true,
-          message: `Ticket marqué comme utilisé: ${ticketId}`
+          message: `Ticket marqué comme utilisé: ${ticketId}`,
+          ticket: ticketInfo ? {
+            id: ticketInfo.id,
+            ticketId: ticketInfo.ticketId,
+            orderNumber: ticketInfo.orderNumber,
+            customerEmail: ticketInfo.customerEmail,
+            ticketTitle: ticketInfo.ticketTitle,
+            status: ticketInfo.status,
+            createdAt: ticketInfo.createdAt,
+            validatedAt: ticketInfo.validatedAt,
+            usedAt: ticketInfo.usedAt,
+            validatedBy: ticketInfo.validatedBy,
+            isUsed: ticketInfo.status === 'used'
+          } : null
         });
       } else {
         return res.status(400).json({
