@@ -55,13 +55,26 @@ export default function MobileScanneriPhone() {
     try {
       console.log('Démarrage du scanner pour iPhone...');
       
-      // Configuration spécifique pour iOS
+      // Vérifier d'abord les permissions
+      if (navigator.permissions) {
+        try {
+          const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          console.log('Permission caméra:', permission.state);
+          
+          if (permission.state === 'denied') {
+            setError('Permission caméra refusée. Veuillez autoriser l\'accès à la caméra dans les paramètres de votre navigateur.');
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.log('Impossible de vérifier les permissions:', err);
+        }
+      }
+      
+      // Configuration plus simple pour éviter les erreurs de permissions
       const constraints = {
         video: {
-          facingMode: 'environment', // Caméra arrière
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
-          frameRate: { ideal: 30, max: 60 }
+          facingMode: 'environment' // Caméra arrière
         },
         audio: false
       };
@@ -118,7 +131,7 @@ export default function MobileScanneriPhone() {
       console.log('Scanner démarré avec succès sur iPhone');
 
       // Démarrer la détection QR code avec ZXing
-      const { BrowserMultiFormatReader } = await import('@zxing/browser');
+      const { BrowserMultiFormatReader } = await import('@zxing/library');
       codeReaderRef.current = new BrowserMultiFormatReader();
 
       // Configuration pour iOS
@@ -139,13 +152,15 @@ export default function MobileScanneriPhone() {
       
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError') {
-          errorMessage = 'Permission caméra refusée. Veuillez autoriser l\'accès à la caméra dans les paramètres Safari.';
+          errorMessage = '❌ Permission caméra refusée. Cliquez sur l\'icône caméra dans la barre d\'adresse et autorisez l\'accès.';
         } else if (err.name === 'NotFoundError') {
-          errorMessage = 'Aucune caméra trouvée sur cet appareil.';
+          errorMessage = '❌ Aucune caméra trouvée sur cet appareil.';
         } else if (err.name === 'NotSupportedError') {
-          errorMessage = 'Votre navigateur ne supporte pas l\'accès à la caméra.';
+          errorMessage = '❌ Votre navigateur ne supporte pas l\'accès à la caméra.';
+        } else if (err.name === 'OverconstrainedError') {
+          errorMessage = '❌ Contraintes caméra non supportées. Essayez avec une autre caméra.';
         } else {
-          errorMessage = `Erreur: ${err.message}`;
+          errorMessage = `❌ Erreur: ${err.message}`;
         }
       }
       
@@ -382,6 +397,21 @@ export default function MobileScanneriPhone() {
             <h3 style={{ margin: '0 0 15px 0', color: '#333', textAlign: 'center' }}>
               📷 Scanner optimisé iPhone
             </h3>
+            
+            <div style={{ 
+              background: '#f0f8ff', 
+              padding: '15px', 
+              borderRadius: '8px', 
+              marginBottom: '20px',
+              border: '1px solid #4a90e2',
+              fontSize: '14px'
+            }}>
+              <strong>📋 Instructions :</strong>
+              <br />1. Cliquez sur "Démarrer le Scanner"
+              <br />2. Autorisez l'accès à la caméra quand demandé
+              <br />3. Pointez la caméra vers un QR code
+              <br />4. Le ticket sera validé automatiquement
+            </div>
             
             {cameraPermission === 'denied' && (
               <div style={{ 
