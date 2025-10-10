@@ -276,7 +276,7 @@ export const emailStyles = `
   </style>
 `;
 
-export const customerEmailTemplate = (orderData: OrderData, tickets?: any[]) => `
+export const customerEmailTemplate = (orderData: OrderData, tickets?: any[], baseUrl?: string) => `
   <!DOCTYPE html>
   <html>
   <head>
@@ -314,7 +314,10 @@ export const customerEmailTemplate = (orderData: OrderData, tickets?: any[]) => 
               </div>
               
               <div class="qr-container">
-                <img src="${ticket.qrCodeData}" alt="QR Code Ticket ${index + 1}" class="qr-code">
+                <img src="${baseUrl || 'http://localhost:3000'}/api/qr/${ticket.ticketId}" 
+                     onerror="this.src='${ticket.qrCodeData}'" 
+                     alt="QR Code Ticket ${index + 1}" 
+                     class="qr-code">
                 <div class="ticket-id">ID: ${ticket.ticketId}</div>
               </div>
               

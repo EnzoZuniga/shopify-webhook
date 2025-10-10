@@ -38,18 +38,20 @@ export async function sendOrderConfirmationEmail(orderData: OrderData) {
 
     console.log(`🎫 ${tickets.length} tickets générés pour la commande #${orderData.order_number}`);
 
-    // Préparer les pièces jointes (QR codes)
+    // Préparer les pièces jointes (QR codes) - utiliser les données base64 stockées
     const attachments = tickets.map((ticket, index) => ({
       filename: `ticket-${orderData.order_number}-${index + 1}-${ticket.ticketTitle.replace(/[^a-zA-Z0-9]/g, '-')}.png`,
       content: ticket.qrCodeData.split(',')[1], // Enlever le préfixe data:image/png;base64,
       encoding: 'base64' as const
     }));
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    
     const result = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'noreply@lafabriqueducode.com',
       to: [orderData.customer.email],
       subject: `🎫 Vos E-Tickets MR NJP Event's - Commande #${orderData.order_number}`,
-      html: customerEmailTemplate(orderData, tickets),
+      html: customerEmailTemplate(orderData, tickets, baseUrl),
       text: customerEmailText(orderData, tickets),
       attachments: attachments
     });
