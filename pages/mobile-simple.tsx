@@ -197,6 +197,22 @@ export default function MobileSimple() {
             >
               📷 Scanner ZXing V2
             </a>
+            <a
+              href="/mobile-scanner-iphone"
+              style={{
+                background: 'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+              }}
+            >
+              📱 Scanner iPhone
+            </a>
           </div>
         </div>
 
