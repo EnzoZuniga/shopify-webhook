@@ -16,6 +16,7 @@
     "@types/qrcode": "^1.5.5",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
+    "jsqr": "^1.4.0",
     "next": "^15.5.4",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",

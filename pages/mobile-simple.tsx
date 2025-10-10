@@ -228,6 +228,66 @@ export default function MobileSimple() {
             }}>
               🎥 Test Caméra Simple
             </a>
+            <a href="/mobile-scanner-pc" style={{ 
+              color: '#6f42c1', 
+              textDecoration: 'none',
+              fontSize: '14px',
+              padding: '8px 16px',
+              border: '1px solid #6f42c1',
+              borderRadius: '8px',
+              display: 'inline-block',
+              margin: '5px',
+              background: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+            }}>
+              💻 Scanner PC
+            </a>
+            <a href="/mobile-scanner-unified" style={{
+              color: '#ff6b35',
+              textDecoration: 'none',
+              fontSize: '14px',
+              padding: '8px 16px',
+              border: '1px solid #ff6b35',
+              borderRadius: '8px',
+              display: 'inline-block',
+              margin: '5px',
+              background: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+            }}>
+              🚀 Scanner Unifié
+            </a>
+            <a href="/mobile-scanner-jsqr" style={{
+              color: '#4a90e2',
+              textDecoration: 'none',
+              fontSize: '14px',
+              padding: '8px 16px',
+              border: '1px solid #4a90e2',
+              borderRadius: '8px',
+              display: 'inline-block',
+              margin: '5px',
+              background: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+            }}>
+              📱 Scanner jsQR
+            </a>
+            <a href="/test-qr-debug" style={{
+              color: '#ff6b35',
+              textDecoration: 'none',
+              fontSize: '14px',
+              padding: '8px 16px',
+              border: '1px solid #ff6b35',
+              borderRadius: '8px',
+              display: 'inline-block',
+              margin: '5px',
+              background: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+            }}>
+              🔍 Debug QR Code
+            </a>
           </div>
         </div>
 
