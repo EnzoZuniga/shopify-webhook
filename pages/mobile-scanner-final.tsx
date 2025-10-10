@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface TicketInfo {
   id: string;
@@ -11,108 +11,60 @@ interface TicketInfo {
   validatedBy?: string;
 }
 
-export default function MobileScannerJSQR() {
+export default function MobileScannerFinal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scannerActive, setScannerActive] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown');
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
-  const [cameraInfo, setCameraInfo] = useState<string>('');
-  const [platform, setPlatform] = useState<string>('');
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const addDebugInfo = (message: string) => {
+    console.log(message);
+    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`]);
+  };
+
   useEffect(() => {
-    // Vérifier les permissions au chargement
     if (typeof window !== 'undefined') {
-      // Détecter la plateforme côté client
-      const isMobile = navigator.userAgent.includes('Mobile');
-      setPlatform(isMobile ? 'Mobile' : 'Desktop');
-      
       if (navigator.permissions) {
         navigator.permissions.query({ name: 'camera' as PermissionName })
           .then(permission => {
             setCameraPermission(permission.state);
+            addDebugInfo(`Permission caméra: ${permission.state}`);
           })
           .catch(() => {
             setCameraPermission('unknown');
+            addDebugInfo('Permission caméra: inconnue');
           });
       }
     }
   }, []);
 
-  // Fonction pour obtenir les contraintes de caméra optimisées
-  const getCameraConstraints = async () => {
+  const startScanner = async () => {
+    setLoading(true);
+    setError(null);
+    setDebugInfo([]);
+    addDebugInfo('Démarrage du scanner...');
+
     try {
-      console.log('🔍 Recherche de la caméra arrière...');
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      
-      console.log('📷 Caméras disponibles:', videoDevices.map(d => d.label));
-      
-      // Chercher la caméra arrière par nom
-      const backCamera = videoDevices.find(device => 
-        device.label.toLowerCase().includes('back') || 
-        device.label.toLowerCase().includes('rear') ||
-        device.label.toLowerCase().includes('environment') ||
-        device.label.toLowerCase().includes('camera2')
-      );
-      
-      if (backCamera) {
-        console.log('✅ Caméra arrière trouvée:', backCamera.label);
-        setCameraInfo(`Caméra arrière: ${backCamera.label}`);
-        return { 
-          video: { 
-            deviceId: { exact: backCamera.deviceId },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false 
-        };
-      } else {
-        console.log('⚠️ Aucune caméra arrière trouvée, utilisation de facingMode');
-        setCameraInfo('Caméra par défaut (facingMode)');
-        return { 
-          video: { 
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false 
-        };
-      }
-    } catch (err) {
-      console.log('❌ Erreur énumération devices:', err);
-      setCameraInfo('Caméra par défaut (fallback)');
-      return { 
-        video: { 
-          facingMode: 'environment',
+      // Contraintes simples pour maximiser la compatibilité
+      const constraints = {
+        video: {
+          facingMode: 'environment', // Caméra arrière
           width: { ideal: 1280 },
           height: { ideal: 720 }
         },
-        audio: false 
+        audio: false
       };
-    }
-  };
 
-  const startScanner = async () => {
-    if (typeof window === 'undefined') return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log('🚀 Démarrage du scanner jsQR...');
-      
-      // Obtenir les contraintes de caméra optimisées
-      const constraints = await getCameraConstraints();
-      
-      console.log('📹 Demande d\'accès caméra avec contraintes:', constraints);
+      addDebugInfo('Demande d\'accès caméra...');
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('✅ Stream obtenu:', stream);
+      addDebugInfo('Stream obtenu avec succès');
 
       streamRef.current = stream;
 
@@ -127,23 +79,21 @@ export default function MobileScannerJSQR() {
         await new Promise((resolve) => {
           videoRef.current!.onloadedmetadata = () => {
             videoRef.current!.play().then(() => {
-              console.log('✅ Vidéo démarrée');
+              addDebugInfo('Vidéo démarrée');
+              setScannerActive(true);
+              setCameraPermission('granted');
               resolve(true);
             });
           };
         });
-        
-        setScannerActive(true);
-        setCameraPermission('granted');
-        console.log('✅ Caméra démarrée avec succès');
-      }
 
-      // Attendre un peu que la vidéo soit stable
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Démarrer la détection QR avec jsQR
-      console.log('🎯 État scanner avant détection:', scannerActive);
-      startQRDetection();
+        // Attendre que la vidéo soit stable
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        addDebugInfo('Démarrage de la détection QR...');
+        
+        // Démarrer la détection
+        startQRDetection();
+      }
 
     } catch (err) {
       console.error('❌ Erreur caméra:', err);
@@ -163,57 +113,77 @@ export default function MobileScannerJSQR() {
       
       setError(errorMessage);
       setCameraPermission('denied');
+      addDebugInfo(`Erreur: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
   const startQRDetection = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) {
+      addDebugInfo('❌ Éléments vidéo/canvas non disponibles');
+      return;
+    }
 
-    console.log('🎯 Démarrage de la détection QR avec jsQR...');
+    addDebugInfo('🎯 Détection QR démarrée');
     
     const detectQR = () => {
-      if (videoRef.current && canvasRef.current && scannerActive) {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const context = canvas.getContext('2d');
+      if (!videoRef.current || !canvasRef.current || !scannerActive) {
+        return;
+      }
 
-        if (context) {
-          // Ajuster la taille du canvas à la vidéo
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          
-          // Dessiner l'image de la vidéo sur le canvas
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          
-          // Obtenir les données d'image
-          const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-          
-          // Détecter le QR code avec jsQR
-          const jsQR = require('jsqr');
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
-          
-          if (code) {
-            console.log('🎯 QR Code détecté:', code.data);
-            handleQRCodeDetected(code.data);
-            return;
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      if (!context) {
+        return;
+      }
+
+      try {
+        // Vérifier que la vidéo a des dimensions valides
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          if (scannerActive) {
+            detectionIntervalRef.current = setTimeout(detectQR, 200);
           }
+          return;
+        }
+
+        // Dessiner l'image de la vidéo sur le canvas
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Obtenir les données d'image
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Détecter le QR code avec jsQR
+        const jsQR = require('jsqr');
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+          addDebugInfo(`🎯 QR Code détecté: ${code.data}`);
+          handleQRCodeDetected(code.data);
+          return;
         }
         
-        // Continuer la détection si pas de résultat et scanner toujours actif
+        // Continuer la détection
         if (scannerActive) {
           detectionIntervalRef.current = setTimeout(detectQR, 100);
+        }
+      } catch (error) {
+        console.error('❌ Erreur lors de la détection:', error);
+        if (scannerActive) {
+          detectionIntervalRef.current = setTimeout(detectQR, 200);
         }
       }
     };
     
     detectQR();
-    console.log('✅ Détection QR code démarrée avec jsQR');
   };
 
   const stopScanner = () => {
-    console.log('🛑 Arrêt du scanner...');
+    addDebugInfo('🛑 Arrêt du scanner');
     
     if (detectionIntervalRef.current) {
       clearTimeout(detectionIntervalRef.current);
@@ -233,48 +203,48 @@ export default function MobileScannerJSQR() {
   };
 
   const handleQRCodeDetected = async (qrData: string) => {
-    console.log('🎯 QR Code détecté:', qrData);
+    addDebugInfo(`🎯 QR Code détecté: ${qrData}`);
     
-    // Arrêter la détection immédiatement
+    // Arrêter la détection
     if (detectionIntervalRef.current) {
       clearTimeout(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
     }
     
-    // Arrêter temporairement le scanner
     stopScanner();
     
     setLoading(true);
     setError(null);
 
     try {
-      // Extraire l'ID du ticket du QR code
+      // Extraire l'ID du ticket
       let ticketId = qrData;
       
-      // Si c'est une URL complète, extraire l'ID du ticket
+      // Si c'est une URL complète, extraire l'ID
       const urlMatch = qrData.match(/\/api\/ticket\/validate\/(.+)$/);
       if (urlMatch) {
         ticketId = urlMatch[1];
-        console.log('📝 URL détectée, ID extrait:', ticketId);
+        addDebugInfo(`📝 ID extrait de l'URL: ${ticketId}`);
       } else {
-        console.log('📝 ID direct détecté:', ticketId);
+        addDebugInfo(`📝 ID direct: ${ticketId}`);
       }
       
-      console.log('🔍 Validation du ticket:', ticketId);
+      addDebugInfo(`🔍 Validation du ticket: ${ticketId}`);
 
       const response = await fetch(`/api/ticket/validate/${ticketId}`);
       const result = await response.json();
 
       if (result.success) {
         setTicketInfo(result.ticket);
-        console.log('✅ Ticket validé:', result.ticket);
+        addDebugInfo('✅ Ticket validé avec succès');
       } else {
         setError(result.error || 'Ticket invalide');
-        console.error('❌ Erreur validation:', result.error);
+        addDebugInfo(`❌ Erreur validation: ${result.error}`);
       }
     } catch (error) {
       console.error('Erreur lors de la validation:', error);
       setError('Erreur lors de la validation du ticket');
+      addDebugInfo(`❌ Erreur: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -295,13 +265,15 @@ export default function MobileScannerJSQR() {
       
       if (result.success) {
         setTicketInfo(result.ticket);
-        console.log('✅ Ticket marqué comme utilisé');
+        addDebugInfo('✅ Ticket marqué comme utilisé');
       } else {
         setError(result.error || 'Erreur lors de la validation');
+        addDebugInfo(`❌ Erreur: ${result.error}`);
       }
     } catch (error) {
       console.error('Erreur lors de la validation:', error);
       setError('Erreur lors de la validation du ticket');
+      addDebugInfo(`❌ Erreur: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -324,7 +296,7 @@ export default function MobileScannerJSQR() {
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
       }}>
         <h2 style={{ textAlign: 'center', margin: '0 0 20px 0', color: '#333' }}>
-          📱 Scanner QR Code - jsQR
+          📱 Scanner QR Code - Version Finale
         </h2>
         
         <div style={{ 
@@ -340,9 +312,6 @@ export default function MobileScannerJSQR() {
           <br />2. Autorisez l'accès à la caméra
           <br />3. Pointez la caméra vers un QR code
           <br />4. Le ticket sera validé automatiquement
-          <br />
-          <br /><strong>🎥 Caméra :</strong> {cameraInfo}
-          <br /><strong>📚 Bibliothèque :</strong> jsQR (plus fiable)
         </div>
 
         {error && (
@@ -434,6 +403,24 @@ export default function MobileScannerJSQR() {
           style={{ display: 'none' }}
         />
 
+        {/* Debug Info */}
+        {debugInfo.length > 0 && (
+          <div style={{ 
+            background: '#f5f5f5', 
+            padding: '15px', 
+            borderRadius: '8px',
+            marginTop: '20px',
+            fontSize: '12px'
+          }}>
+            <strong>🔧 Debug Info:</strong>
+            {debugInfo.map((info, index) => (
+              <div key={index} style={{ marginTop: '5px', color: '#666' }}>
+                {info}
+              </div>
+            ))}
+          </div>
+        )}
+
         {ticketInfo && (
           <div style={{ 
             background: ticketInfo.isUsed ? '#fef2f2' : '#f0f8ff', 
@@ -482,6 +469,7 @@ export default function MobileScannerJSQR() {
                 onClick={() => {
                   setTicketInfo(null);
                   setError(null);
+                  setDebugInfo([]);
                 }}
                 style={{
                   background: '#4a90e2',
@@ -509,8 +497,6 @@ export default function MobileScannerJSQR() {
           <strong>Status:</strong> {scannerActive ? '✅ Scanner actif' : '⏸️ Scanner arrêté'}
           <br />
           <strong>Permission:</strong> {cameraPermission}
-          <br />
-          <strong>Platform:</strong> {platform || 'Chargement...'}
         </div>
       </div>
 

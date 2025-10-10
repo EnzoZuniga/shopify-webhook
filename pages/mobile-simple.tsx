@@ -288,6 +288,21 @@ export default function MobileSimple() {
             }}>
               🔍 Debug QR Code
             </a>
+            <a href="/mobile-scanner-final" style={{
+              color: '#28a745',
+              textDecoration: 'none',
+              fontSize: '14px',
+              padding: '8px 16px',
+              border: '1px solid #28a745',
+              borderRadius: '8px',
+              display: 'inline-block',
+              margin: '5px',
+              background: 'white',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+            }}>
+              🎯 Scanner Final
+            </a>
           </div>
         </div>
 
