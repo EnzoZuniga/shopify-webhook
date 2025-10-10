@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface TicketInfo {
   id: string;
@@ -13,28 +13,118 @@ interface TicketInfo {
   validatedBy?: string;
 }
 
-export default function MobileSimple() {
-  const [ticketId, setTicketId] = useState('');
+export default function MobileScannerV2() {
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [validatedBy, setValidatedBy] = useState('');
   const [notes, setNotes] = useState('');
+  const [scannerActive, setScannerActive] = useState(false);
+  const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const codeReaderRef = useRef<any>(null);
 
-  const handleTicketIdSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticketId.trim()) {
-      setError('Veuillez saisir un ID de ticket');
+  // Vérifier les permissions caméra au chargement
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Vérifier si l'appareil a une caméra
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Votre navigateur ne supporte pas l\'accès à la caméra');
+        setCameraPermission('denied');
+        return;
+      }
+    }
+  }, []);
+
+  const startScanner = async () => {
+    if (typeof window === 'undefined') return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Importer ZXing dynamiquement
+      const { BrowserMultiFormatReader } = await import('@zxing/browser');
+      codeReaderRef.current = new BrowserMultiFormatReader();
+
+      if (!videoRef.current) return;
+
+      console.log('Démarrage du scanner ZXing...');
+
+      // Demander l'accès à la caméra
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment', // Caméra arrière
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+
+      streamRef.current = stream;
+      videoRef.current.srcObject = stream;
+      videoRef.current.setAttribute('playsinline', 'true');
+      await videoRef.current.play();
+
+      setScannerActive(true);
+      setCameraPermission('granted');
+      setError(null);
+      console.log('Scanner ZXing démarré avec succès');
+
+      // Démarrer la détection QR code
+      codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result: any, err: any) => {
+        if (result) {
+          console.log('QR Code détecté:', result.text);
+          handleQRCodeDetected(result.text);
+        }
+        if (err && !err.name?.includes('NotFoundException')) {
+          console.error('Erreur de scan:', err);
+        }
+      });
+
+    } catch (err) {
+      console.error('Erreur lors du démarrage du scanner:', err);
+      setError('Impossible de démarrer le scanner. Vérifiez les permissions caméra.');
+      setCameraPermission('denied');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const stopScanner = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+    setScannerActive(false);
+  };
+
+  const handleQRCodeDetected = async (qrData: string) => {
+    // Arrêter le scanner temporairement
+    stopScanner();
+    
+    // Extraire l'ID du ticket depuis l'URL
+    const ticketIdMatch = qrData.match(/\/api\/ticket\/validate\/(.+)$/);
+    if (!ticketIdMatch) {
+      setError('QR code invalide. Format non reconnu.');
       return;
     }
 
+    const ticketId = ticketIdMatch[1];
+    await fetchTicketInfo(ticketId);
+  };
+
+  const fetchTicketInfo = async (ticketId: string) => {
     setLoading(true);
     setError(null);
     setTicketInfo(null);
     
     try {
-      const response = await fetch(`/api/ticket/validate/${ticketId.trim()}`);
+      const response = await fetch(`/api/ticket/validate/${ticketId}`);
       const result = await response.json();
       
       if (result.success) {
@@ -146,6 +236,13 @@ export default function MobileSimple() {
     }
   };
 
+  // Nettoyer les ressources au démontage
+  useEffect(() => {
+    return () => {
+      stopScanner();
+    };
+  }, []);
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -160,92 +257,157 @@ export default function MobileSimple() {
           marginBottom: '30px',
           color: 'white'
         }}>
-          <h1 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>📱 Validation Tickets</h1>
-          <p style={{ margin: 0, opacity: 0.9 }}>MR NJP Event's - Scanner manuel</p>
+          <h1 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>📱 Scanner QR Code V2</h1>
+          <p style={{ margin: 0, opacity: 0.9 }}>MR NJP Event's - Scanner ZXing</p>
           
-          {/* Scanner Buttons */}
-          <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {/* Back Button */}
+          <div style={{ marginTop: '20px' }}>
             <a
-              href="/mobile-scanner"
+              href="/mobile-simple"
               style={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                background: 'rgba(255,255,255,0.2)',
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '12px',
-                padding: '12px 24px',
-                fontSize: '16px',
+                padding: '10px 20px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 display: 'inline-block',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                border: '1px solid rgba(255,255,255,0.3)'
               }}
             >
-              📷 Scanner QR Code
-            </a>
-            <a
-              href="/mobile-scanner-v2"
-              style={{
-                background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 100%)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '12px',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-              }}
-            >
-              📷 Scanner ZXing V2
+              ← Saisie manuelle
             </a>
           </div>
         </div>
 
-        {/* Input Section */}
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '16px', 
-          padding: '20px', 
-          marginBottom: '20px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ margin: '0 0 15px 0', color: '#333' }}>🔍 Rechercher un ticket</h3>
-          
-          <form onSubmit={handleTicketIdSubmit}>
-            <input
-              type="text"
-              placeholder="ID du ticket (ex: 1380_mrnjpeventsvip_1_abc123_def4)"
-              value={ticketId}
-              onChange={(e) => setTicketId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '15px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '12px',
-                fontSize: '16px',
-                marginBottom: '15px',
-                boxSizing: 'border-box'
-              }}
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '15px 30px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                width: '100%',
-                opacity: loading ? 0.6 : 1
-              }}
-            >
-              {loading ? '⏳ Recherche...' : '🔍 Rechercher le ticket'}
-            </button>
-          </form>
-        </div>
+        {/* Scanner Section */}
+        {!ticketInfo && (
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '16px', 
+            padding: '20px', 
+            marginBottom: '20px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 15px 0', color: '#333', textAlign: 'center' }}>
+              📷 Scanner ZXing (Version améliorée)
+            </h3>
+            
+            {cameraPermission === 'denied' && (
+              <div style={{ 
+                background: '#fef2f2', 
+                border: '1px solid #fecaca', 
+                borderRadius: '12px', 
+                padding: '15px', 
+                marginBottom: '20px',
+                color: '#dc2626',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>❌ Permission caméra refusée</div>
+                <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+                  Veuillez activer l'accès à la caméra dans les paramètres de votre navigateur.
+                </div>
+                <button
+                  onClick={() => {
+                    setCameraPermission('prompt');
+                    setError(null);
+                  }}
+                  style={{
+                    background: '#8B4513',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 Réessayer
+                </button>
+              </div>
+            )}
+
+            {!scannerActive && cameraPermission !== 'denied' && (
+              <div style={{ textAlign: 'center' }}>
+                <button
+                  onClick={startScanner}
+                  disabled={loading}
+                  style={{
+                    background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '15px 30px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.6 : 1,
+                    marginBottom: '20px'
+                  }}
+                >
+                  {loading ? '⏳ Démarrage...' : '📷 Démarrer le scanner ZXing'}
+                </button>
+                <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                  {loading ? 'Initialisation de la caméra...' : 'Pointez la caméra vers le QR code du ticket'}
+                </p>
+              </div>
+            )}
+
+            {scannerActive && (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ 
+                  position: 'relative',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  marginBottom: '15px',
+                  border: '3px solid #8B4513'
+                }}>
+                  <video
+                    ref={videoRef}
+                    style={{
+                      width: '100%',
+                      height: '300px',
+                      objectFit: 'cover'
+                    }}
+                    autoPlay
+                    playsInline
+                    muted
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '200px',
+                    height: '200px',
+                    border: '2px solid #8B4513',
+                    borderRadius: '12px',
+                    background: 'rgba(139, 69, 19, 0.1)',
+                    pointerEvents: 'none'
+                  }} />
+                </div>
+                <button
+                  onClick={stopScanner}
+                  style={{
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⏹️ Arrêter le scanner
+                </button>
+                <p style={{ fontSize: '14px', color: '#666', margin: '10px 0 0 0' }}>
+                  Pointez vers le QR code dans le cadre
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Loading */}
         {loading && (
@@ -273,6 +435,27 @@ export default function MobileSimple() {
           }}>
             <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>❌ Erreur</div>
             <div>{error}</div>
+            {ticketInfo && (
+              <button
+                onClick={() => {
+                  setTicketInfo(null);
+                  setError(null);
+                  setSuccess(null);
+                }}
+                style={{
+                  background: '#8B4513',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  marginTop: '10px'
+                }}
+              >
+                🔄 Nouveau scan
+              </button>
+            )}
           </div>
         )}
 
@@ -434,6 +617,30 @@ export default function MobileSimple() {
                 )}
               </div>
             )}
+
+            {/* Nouveau scan button */}
+            <button
+              onClick={() => {
+                setTicketInfo(null);
+                setError(null);
+                setSuccess(null);
+                setValidatedBy('');
+                setNotes('');
+              }}
+              style={{
+                background: '#8B4513',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px 20px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                width: '100%',
+                marginTop: '15px'
+              }}
+            >
+              🔄 Nouveau scan
+            </button>
           </div>
         )}
 
@@ -444,12 +651,13 @@ export default function MobileSimple() {
           padding: '15px',
           color: '#333'
         }}>
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>📋 Instructions :</h4>
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>📋 Instructions ZXing :</h4>
           <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '14px' }}>
-            <li>Saisissez l'ID du ticket (visible sur le QR code)</li>
-            <li>Cliquez sur "Rechercher le ticket"</li>
+            <li>Cliquez sur "Démarrer le scanner ZXing"</li>
+            <li>Autorisez l'accès à la caméra si demandé</li>
+            <li>Pointez vers le QR code du ticket</li>
+            <li>Le ticket sera automatiquement détecté</li>
             <li>Validez ou marquez comme utilisé</li>
-            <li>L'ID est affiché sous chaque QR code dans les emails</li>
           </ol>
         </div>
       </div>
