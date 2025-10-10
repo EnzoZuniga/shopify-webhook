@@ -25,26 +25,15 @@ export default function MobileScanner() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<any>(null);
 
-  // Importer QrScanner dynamiquement (côté client uniquement)
+  // Vérifier les permissions caméra au chargement
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('qr-scanner').then((QrScanner) => {
-        // Vérifier les permissions caméra
-        QrScanner.hasCamera().then((hasCamera) => {
-          if (!hasCamera) {
-            setError('Aucune caméra détectée sur cet appareil');
-            return;
-          }
-        });
-
-        // Demander les permissions
-        QrScanner.requestCameraPermission().then((permission) => {
-          setCameraPermission(permission);
-          if (permission === 'denied') {
-            setError('Permission caméra refusée. Veuillez l\'activer dans les paramètres.');
-          }
-        });
-      });
+      // Vérifier si l'appareil a une caméra
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Votre navigateur ne supporte pas l\'accès à la caméra');
+        setCameraPermission('denied');
+        return;
+      }
     }
   }, []);
 
@@ -55,6 +44,17 @@ export default function MobileScanner() {
       const QrScanner = (await import('qr-scanner')).default;
       
       if (!videoRef.current) return;
+
+      // Vérifier les permissions caméra
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        setCameraPermission('granted');
+      } catch (permissionError) {
+        console.error('Permission caméra refusée:', permissionError);
+        setCameraPermission('denied');
+        setError('Permission caméra refusée. Veuillez l\'activer dans les paramètres.');
+        return;
+      }
 
       scannerRef.current = new QrScanner(
         videoRef.current,
