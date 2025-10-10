@@ -40,22 +40,17 @@ export default function MobileScanner() {
   const startScanner = async () => {
     if (typeof window === 'undefined') return;
 
+    setLoading(true);
+    setError(null);
+
     try {
       const QrScanner = (await import('qr-scanner')).default;
       
       if (!videoRef.current) return;
 
-      // Vérifier les permissions caméra
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        setCameraPermission('granted');
-      } catch (permissionError) {
-        console.error('Permission caméra refusée:', permissionError);
-        setCameraPermission('denied');
-        setError('Permission caméra refusée. Veuillez l\'activer dans les paramètres.');
-        return;
-      }
+      console.log('Démarrage du scanner...');
 
+      // Créer le scanner
       scannerRef.current = new QrScanner(
         videoRef.current,
         (result) => {
@@ -69,12 +64,18 @@ export default function MobileScanner() {
         }
       );
 
+      // Démarrer le scanner
       await scannerRef.current.start();
       setScannerActive(true);
+      setCameraPermission('granted');
       setError(null);
+      console.log('Scanner démarré avec succès');
     } catch (err) {
       console.error('Erreur lors du démarrage du scanner:', err);
       setError('Impossible de démarrer le scanner. Vérifiez les permissions caméra.');
+      setCameraPermission('denied');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -282,9 +283,26 @@ export default function MobileScanner() {
                 textAlign: 'center'
               }}>
                 <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>❌ Permission caméra refusée</div>
-                <div style={{ fontSize: '14px' }}>
+                <div style={{ fontSize: '14px', marginBottom: '10px' }}>
                   Veuillez activer l'accès à la caméra dans les paramètres de votre navigateur.
                 </div>
+                <button
+                  onClick={() => {
+                    setCameraPermission('prompt');
+                    setError(null);
+                  }}
+                  style={{
+                    background: '#8B4513',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 Réessayer
+                </button>
               </div>
             )}
 
@@ -306,10 +324,10 @@ export default function MobileScanner() {
                     marginBottom: '20px'
                   }}
                 >
-                  📷 Démarrer le scanner
+                  {loading ? '⏳ Démarrage...' : '📷 Démarrer le scanner'}
                 </button>
                 <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
-                  Pointez la caméra vers le QR code du ticket
+                  {loading ? 'Initialisation de la caméra...' : 'Pointez la caméra vers le QR code du ticket'}
                 </p>
               </div>
             )}
