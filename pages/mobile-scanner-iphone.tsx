@@ -63,15 +63,37 @@ export default function MobileScanneriPhone() {
         audio: false
       };
 
-      console.log('Demande d\'accès caméra arrière...');
+      console.log('Recherche de la caméra arrière...');
       let stream;
       
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        console.log('✅ Stream caméra arrière obtenu:', stream);
+        // Lister toutes les caméras disponibles
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        console.log('Caméras disponibles:', videoDevices.map(d => d.label));
+        
+        // Chercher la caméra arrière (généralement la dernière ou celle avec "back" dans le nom)
+        const backCamera = videoDevices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('rear') ||
+          device.label.toLowerCase().includes('environment')
+        );
+        
+        if (backCamera) {
+          console.log('🎥 Caméra arrière trouvée:', backCamera.label);
+          const backConstraints = {
+            video: { deviceId: { exact: backCamera.deviceId } },
+            audio: false
+          };
+          stream = await navigator.mediaDevices.getUserMedia(backConstraints);
+          console.log('✅ Stream caméra arrière obtenu:', stream);
+        } else {
+          console.log('❌ Aucune caméra arrière trouvée, utilisation de facingMode...');
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          console.log('✅ Stream avec facingMode obtenu:', stream);
+        }
       } catch (err) {
-        console.log('❌ Caméra arrière non disponible, fallback vers caméra avant...');
-        // Fallback vers caméra avant si arrière non disponible
+        console.log('❌ Erreur caméra arrière, fallback vers caméra avant...');
         const fallbackConstraints = {
           video: true,
           audio: false
@@ -90,6 +112,9 @@ export default function MobileScanneriPhone() {
         console.log('✅ Caméra démarrée');
       }
 
+      // Attendre un peu que la vidéo soit prête
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Démarrer la détection QR code avec ZXing
       console.log('Initialisation de ZXing...');
       const { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } = await import('@zxing/library');
@@ -98,21 +123,31 @@ export default function MobileScanneriPhone() {
       const hints = new Map();
       hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]);
       hints.set(DecodeHintType.TRY_HARDER, true);
+      hints.set(DecodeHintType.CHARACTER_SET, 'UTF-8');
       
       codeReaderRef.current = new BrowserMultiFormatReader(hints);
       console.log('ZXing initialisé avec configuration QR code');
 
       // Configuration pour iOS
       console.log('Démarrage de la détection QR code...');
-      codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result: any, err: any) => {
-        if (result) {
-          console.log('🎯 QR Code détecté:', result.text);
-          handleQRCodeDetected(result.text);
+      
+      // Démarrer la détection avec un intervalle pour éviter la surcharge
+      const startDetection = () => {
+        if (codeReaderRef.current && videoRef.current) {
+          codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result: any, err: any) => {
+            if (result) {
+              console.log('🎯 QR Code détecté:', result.text);
+              handleQRCodeDetected(result.text);
+            }
+            if (err && !err.name?.includes('NotFoundException')) {
+              console.error('Erreur de scan:', err);
+            }
+          });
         }
-        if (err && !err.name?.includes('NotFoundException')) {
-          console.error('Erreur de scan:', err);
-        }
-      });
+      };
+      
+      // Démarrer la détection
+      startDetection();
       console.log('✅ Détection QR code démarrée - Pointez vers un QR code');
 
     } catch (err) {
