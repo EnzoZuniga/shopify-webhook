@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import crypto from "crypto";
-import { sendOrderConfirmationEmail, sendAdminNotificationEmail } from "../../../lib/email";
+import { sendOrderConfirmationEmail } from "../../../lib/email";
 
 // Configuration pour désactiver le parsing automatique du body
 export const config = {
@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }))
       });
 
-      // Envoyer l'email de confirmation au client
+      // Envoyer l'email de confirmation au client uniquement
       try {
         console.log("📧 Envoi de l'email de confirmation...");
         const emailResult = await sendOrderConfirmationEmail(body);
@@ -105,20 +105,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       } catch (emailError) {
         console.error("❌ Erreur lors de l'envoi de l'email client:", emailError);
-      }
-
-      // Envoyer la notification à l'admin
-      try {
-        console.log("📧 Envoi de la notification admin...");
-        const adminEmailResult = await sendAdminNotificationEmail(body);
-        
-        if (adminEmailResult.success) {
-          console.log("✅ Notification admin envoyée:", adminEmailResult.emailId);
-        } else {
-          console.error("❌ Erreur notification admin:", adminEmailResult.error);
-        }
-      } catch (adminEmailError) {
-        console.error("❌ Erreur notification admin:", adminEmailError);
       }
     }
     

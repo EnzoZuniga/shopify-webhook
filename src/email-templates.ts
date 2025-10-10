@@ -28,136 +28,250 @@ export interface OrderData {
 export const emailStyles = `
   <style>
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
       line-height: 1.6; 
-      color: #5D4037; 
-      background: #FDF8ED;
+      color: #2D3748; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       margin: 0;
       padding: 20px;
     }
-    .container { 
-      max-width: 500px; 
+    .email-container { 
+      max-width: 600px; 
       margin: 0 auto; 
-      background: #FDF8ED;
-      border-radius: 8px;
+      background: #FFFFFF;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
-    .pixel-art {
+    .header {
+      background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+      padding: 30px 20px;
       text-align: center;
-      padding: 20px 0 10px 0;
-      font-size: 24px;
+      color: white;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
     }
     .event-title {
-      text-align: center;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
-      color: #5D4037;
-      margin: 10px 0 30px 0;
+      margin: 0 0 10px 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .event-subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+      margin: 0;
     }
     .content {
-      padding: 0 30px 30px 30px;
-      background: #FDF8ED;
+      padding: 40px 30px;
     }
     .greeting {
-      font-size: 16px;
-      margin-bottom: 20px;
-      color: #5D4037;
+      font-size: 18px;
+      margin-bottom: 30px;
+      color: #2D3748;
+      font-weight: 500;
     }
-    .ticket-info {
-      background: #FFF8E1;
+    .tickets-section {
+      background: linear-gradient(135deg, #FFF8E1 0%, #FDF8ED 100%);
       border: 2px solid #8B4513;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px 0;
+      border-radius: 16px;
+      padding: 30px;
+      margin: 30px 0;
       text-align: center;
     }
-    .ticket-title {
+    .tickets-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #8B4513;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .ticket-card {
+      background: white;
+      border: 2px solid #8B4513;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+      box-shadow: 0 8px 16px rgba(139, 69, 19, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .ticket-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #8B4513, #A0522D, #8B4513);
+    }
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .ticket-name {
       font-size: 18px;
       font-weight: bold;
       color: #8B4513;
-      margin-bottom: 15px;
+      margin: 0;
     }
-    .ticket-details {
-      font-size: 16px;
-      line-height: 1.8;
-      color: #5D4037;
-    }
-    .date-info {
-      background: #FFD700;
-      color: #8B4513;
-      padding: 8px 16px;
+    .ticket-number {
+      background: #8B4513;
+      color: white;
+      padding: 6px 12px;
       border-radius: 20px;
+      font-size: 12px;
       font-weight: bold;
-      display: inline-block;
-      margin: 10px 0;
     }
-    .important {
+    .qr-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .qr-code {
+      width: 150px;
+      height: 150px;
+      border: 3px solid #8B4513;
+      border-radius: 12px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin: 0 auto;
+    }
+    .ticket-id {
+      font-size: 11px;
+      color: #666;
+      margin-top: 10px;
+      font-family: monospace;
+      background: #f7f7f7;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .ticket-instructions {
       background: #FFE0B2;
       border-left: 4px solid #8B4513;
       padding: 15px;
       margin: 20px 0;
       border-radius: 0 8px 8px 0;
-    }
-    .important-title {
-      font-weight: bold;
-      color: #8B4513;
-      margin-bottom: 8px;
-    }
-    .closing {
-      text-align: center;
-      margin: 30px 0 20px 0;
-      font-size: 16px;
+      font-size: 14px;
       color: #5D4037;
     }
-    .signature {
-      text-align: center;
-      font-weight: bold;
-      color: #8B4513;
-      margin-bottom: 20px;
+    .order-summary {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 30px 0;
     }
-    .arrow {
-      text-align: center;
+    .order-title {
       font-size: 20px;
-      color: #8B4513;
-      margin: 20px 0;
+      font-weight: bold;
+      color: #2D3748;
+      margin-bottom: 20px;
+      text-align: center;
     }
-    .ticket-item {
-      background: #FFF8E1;
-      border: 1px solid #8B4513;
-      border-radius: 6px;
-      padding: 12px;
-      margin: 8px 0;
+    .order-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
     }
-    .ticket-name {
-      font-weight: 600;
-      color: #5D4037;
-      font-size: 14px;
+    .order-item:last-child {
+      border-bottom: none;
     }
-    .ticket-price {
+    .item-name {
+      font-weight: 500;
+      color: #2D3748;
+    }
+    .item-price {
       font-weight: bold;
       color: #8B4513;
-      font-size: 16px;
     }
-    .total-section {
+    .order-total {
       background: #8B4513;
       color: white;
-      padding: 15px;
+      padding: 20px;
       border-radius: 8px;
       text-align: center;
-      margin: 20px 0;
+      margin-top: 20px;
     }
     .total-label {
       font-size: 14px;
       opacity: 0.9;
+      margin-bottom: 5px;
     }
     .total-amount {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .important-info {
+      background: linear-gradient(135deg, #FFE0B2 0%, #FFF3E0 100%);
+      border: 2px solid #FF9800;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 30px 0;
+    }
+    .important-title {
+      font-weight: bold;
+      color: #E65100;
+      margin-bottom: 15px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .important-list {
+      margin: 0;
+      padding-left: 20px;
+      color: #5D4037;
+    }
+    .important-list li {
+      margin-bottom: 8px;
+    }
+    .footer {
+      background: #2D3748;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .footer-title {
       font-size: 20px;
       font-weight: bold;
-      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+    .footer-text {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+    .footer-signature {
+      font-size: 18px;
+      font-weight: bold;
+      color: #8B4513;
+    }
+    .attachments-note {
+      background: #E3F2FD;
+      border: 1px solid #2196F3;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+      font-size: 14px;
+      color: #1565C0;
     }
   </style>
 `;
@@ -167,114 +281,109 @@ export const customerEmailTemplate = (orderData: OrderData, tickets?: any[]) => 
   <html>
   <head>
     <meta charset="utf-8">
-    <title>🎫 E-Ticket - MR NJP Event's</title>
+    <title>🎫 Vos E-Tickets MR NJP Event's</title>
     ${emailStyles}
   </head>
   <body>
-    <div class="container">
-      <div class="pixel-art">
-        <img src="https://shopify-webhook-silk.vercel.app/assets/logo.png" alt="MR NJP Event's Logo" style="width: 60px; height: 60px; object-fit: contain;">
+    <div class="email-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">🎫</div>
+        <h1 class="event-title">MR NJP Event's</h1>
+        <p class="event-subtitle">Vos E-Tickets d'Entrée</p>
       </div>
-      <div class="event-title">MR NJP Event's</div>
       
+      <!-- Content -->
       <div class="content">
-        <div class="greeting">Hi,</div>
-        
-        <div class="ticket-info">
-          <div class="ticket-title">🎟️ Vos E-Tickets</div>
-          <div class="ticket-details">
-            Voici vos <strong>e-tickets</strong> pour l'événement <strong>MR NJP Event's</strong>.
-          </div>
-          <div class="date-info">
-            Commande #${orderData.order_number} - ${new Date(orderData.created_at).toLocaleDateString('fr-FR')}
-          </div>
-          ${tickets && tickets.length > 0 ? `
-            <div style="margin: 20px 0;">
-              <div style="font-weight: bold; margin-bottom: 15px; color: #8B4513; text-align: center;">
-                🎫 Vos Tickets d'Entrée (${tickets.length} ticket${tickets.length > 1 ? 's' : ''})
-              </div>
-              ${tickets.map((ticket, index) => `
-                <div style="
-                  border: 2px solid #8B4513; 
-                  border-radius: 12px; 
-                  padding: 20px; 
-                  margin: 15px 0; 
-                  background: linear-gradient(135deg, #FFF8E1 0%, #FDF8ED 100%);
-                  box-shadow: 0 4px 8px rgba(139, 69, 19, 0.1);
-                ">
-                  <div style="text-align: center;">
-                    <div style="font-weight: bold; color: #8B4513; margin-bottom: 10px; font-size: 16px;">
-                      🎫 Ticket ${index + 1}: ${ticket.ticketTitle}
-                    </div>
-                    <div style="margin: 15px 0;">
-                      <img src="${ticket.qrCodeData}" alt="QR Code Ticket ${index + 1}" style="
-                        width: 120px; 
-                        height: 120px; 
-                        border: 2px solid #8B4513; 
-                        border-radius: 8px; 
-                        background: white; 
-                        padding: 8px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                      ">
-                    </div>
-                    <div style="font-size: 11px; color: #666; margin-top: 8px;">
-                      ID: ${ticket.ticketId}
-                    </div>
-                    <div style="font-size: 12px; color: #8B4513; margin-top: 5px; font-weight: bold;">
-                      Présentez ce QR code à l'entrée
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-              <div style="
-                background: #FFE0B2; 
-                border-left: 4px solid #8B4513; 
-                padding: 12px; 
-                margin: 20px 0; 
-                border-radius: 0 8px 8px 0;
-                font-size: 13px;
-                color: #5D4037;
-              ">
-                <strong>📱 Important :</strong> Chaque ticket a un QR code unique. 
-                ${tickets.length > 1 ? 'Présentez le bon QR code pour chaque personne.' : 'Gardez ce ticket avec vous.'}
-              </div>
-            </div>
-          ` : ''}
+        <div class="greeting">
+          Salut ${orderData.customer.first_name || ''} ! 👋<br>
+          Félicitations pour votre commande ! Voici vos tickets d'entrée pour l'événement.
         </div>
         
-        <div class="ticket-details">
-          <strong>🎫 Tickets commandés :</strong><br><br>
+        <!-- Tickets Section -->
+        <div class="tickets-section">
+          <div class="tickets-title">
+            🎫 Vos Tickets d'Entrée (${tickets?.length || 0} ticket${(tickets?.length || 0) > 1 ? 's' : ''})
+          </div>
+          
+          ${tickets && tickets.length > 0 ? tickets.map((ticket, index) => `
+            <div class="ticket-card">
+              <div class="ticket-header">
+                <h3 class="ticket-name">${ticket.ticketTitle}</h3>
+                <span class="ticket-number">Ticket ${index + 1}</span>
+              </div>
+              
+              <div class="qr-container">
+                <img src="${ticket.qrCodeData}" alt="QR Code Ticket ${index + 1}" class="qr-code">
+                <div class="ticket-id">ID: ${ticket.ticketId}</div>
+              </div>
+              
+              <div class="ticket-instructions">
+                <strong>📱 Instructions :</strong> Présentez ce QR code à l'entrée de l'événement. 
+                Chaque ticket est unique et ne peut être utilisé qu'une seule fois.
+              </div>
+            </div>
+          `).join('') : ''}
+          
+          <div class="ticket-instructions">
+            <strong>📱 Important :</strong> 
+            ${tickets && tickets.length > 1 
+              ? `Vous avez ${tickets.length} tickets. Chaque personne doit présenter son propre QR code à l'entrée.`
+              : 'Gardez ce ticket avec vous et présentez-le à l\'entrée de l\'événement.'
+            }
+          </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <h3 class="order-title">📋 Résumé de votre commande</h3>
+          <div class="date-info" style="text-align: center; margin-bottom: 20px; background: #8B4513; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; display: inline-block;">
+            Commande #${orderData.order_number} - ${new Date(orderData.created_at).toLocaleDateString('fr-FR')}
+          </div>
+          
           ${orderData.line_items.map(item => `
-            <div class="ticket-item">
-              <div class="ticket-name">${item.title} (x${item.quantity})</div>
-              <div class="ticket-price">${item.price} ${orderData.currency}</div>
+            <div class="order-item">
+              <span class="item-name">${item.title} (x${item.quantity})</span>
+              <span class="item-price">${item.price} ${orderData.currency}</span>
             </div>
           `).join('')}
           
-          <div class="total-section">
+          <div class="order-total">
             <div class="total-label">Total de votre commande</div>
             <div class="total-amount">${orderData.total_price} ${orderData.currency}</div>
           </div>
         </div>
         
-        <div class="important">
-          <div class="important-title">Important :</div>
-          • Gardez ce ticket avec vous<br>
-          • Présentez une pièce d'identité valide<br>
-          • L'emplacement exact sera communiqué le jour de l'événement
+        <!-- Attachments Note -->
+        <div class="attachments-note">
+          📎 <strong>Pièces jointes :</strong> Les QR codes sont également disponibles en pièces jointes pour sauvegarder sur votre téléphone.
         </div>
         
-        <div class="closing">
-          <strong>Préparez-vous pour un événement incroyable !</strong><br>
-          À bientôt sur la piste de danse !
+        <!-- Important Information -->
+        <div class="important-info">
+          <div class="important-title">
+            ⚠️ Informations importantes
+          </div>
+          <ul class="important-list">
+            <li>Gardez ce ticket avec vous à tout moment</li>
+            <li>Présentez une pièce d'identité valide avec votre ticket</li>
+            <li>L'emplacement exact sera communiqué 24h avant l'événement</li>
+            <li>Arrivez 30 minutes avant le début de l'événement</li>
+            <li>En cas de problème, contactez-nous avec votre numéro de commande</li>
+          </ul>
         </div>
-        
-        <div class="signature">
+      </div>
+      
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-title">Préparez-vous pour une soirée incroyable ! 🎉</div>
+        <div class="footer-text">
+          Nous avons hâte de vous voir sur la piste de danse !
+        </div>
+        <div class="footer-signature">
           Cheers,<br>
-          MR NJP Event's
+          L'équipe MR NJP Event's
         </div>
-        
-        <div class="arrow">↓</div>
       </div>
     </div>
   </body>
@@ -349,30 +458,43 @@ export const adminEmailTemplate = (orderData: OrderData) => `
   </html>
 `;
 
-export const customerEmailText = (orderData: OrderData) => `
-  E-Ticket MR NJP Event's
+export const customerEmailText = (orderData: OrderData, tickets?: any[]) => `
+🎫 VOS E-TICKETS MR NJP EVENT'S
 
-  Hi,
+Salut ${orderData.customer.first_name || ''} ! 👋
 
-  Voici votre e-ticket pour l'événement MR NJP Event's.
+Félicitations pour votre commande ! Voici vos tickets d'entrée pour l'événement.
 
-  Commande #${orderData.order_number} - ${new Date(orderData.created_at).toLocaleDateString('fr-FR')}
+📋 RÉSUMÉ DE VOTRE COMMANDE
+Commande #${orderData.order_number} - ${new Date(orderData.created_at).toLocaleDateString('fr-FR')}
 
-  Tickets commandés :
-  ${orderData.line_items.map(item => `${item.title} (x${item.quantity}) - ${item.price} ${orderData.currency}`).join('\n')}
+Tickets commandés :
+${orderData.line_items.map(item => `${item.title} (x${item.quantity}) - ${item.price} ${orderData.currency}`).join('\n')}
 
-  Total : ${orderData.total_price} ${orderData.currency}
+Total : ${orderData.total_price} ${orderData.currency}
 
-  Important :
-  • Gardez ce ticket avec vous
-  • Présentez une pièce d'identité valide
-  • L'emplacement exact sera communiqué le jour de l'événement
+🎫 VOS TICKETS D'ENTRÉE (${tickets?.length || 0} ticket${(tickets?.length || 0) > 1 ? 's' : ''})
+${tickets && tickets.length > 0 ? tickets.map((ticket, index) => `
+Ticket ${index + 1}: ${ticket.ticketTitle}
+ID: ${ticket.ticketId}
+QR Code: Présentez ce code à l'entrée de l'événement
+`).join('') : ''}
 
-  Préparez-vous pour un événement incroyable !
-  À bientôt sur la piste de danse !
+📎 PIÈCES JOINTES
+Les QR codes sont également disponibles en pièces jointes pour sauvegarder sur votre téléphone.
 
-  Cheers,
-  MR NJP Event's
+⚠️ INFORMATIONS IMPORTANTES
+• Gardez ce ticket avec vous à tout moment
+• Présentez une pièce d'identité valide avec votre ticket
+• L'emplacement exact sera communiqué 24h avant l'événement
+• Arrivez 30 minutes avant le début de l'événement
+• En cas de problème, contactez-nous avec votre numéro de commande
+
+Préparez-vous pour une soirée incroyable ! 🎉
+Nous avons hâte de vous voir sur la piste de danse !
+
+Cheers,
+L'équipe MR NJP Event's
 `;
 
 export const adminEmailText = (orderData: OrderData) => `
@@ -403,3 +525,4 @@ export const adminEmailText = (orderData: OrderData) => `
 
   MR NJP Event's Admin
 `;
+

@@ -28,8 +28,8 @@ export async function sendOrderConfirmationEmail(orderData: OrderData) {
       customerEmail: orderData.customer.email,
       lineItems: orderData.line_items,
       currency: orderData.currency,
-      size: 200,
-      margin: 2,
+      size: 300, // QR code plus grand pour les pièces jointes
+      margin: 3,
       color: {
         dark: '#8B4513',
         light: '#FDF8ED'
@@ -38,20 +38,28 @@ export async function sendOrderConfirmationEmail(orderData: OrderData) {
 
     console.log(`🎫 ${tickets.length} tickets générés pour la commande #${orderData.order_number}`);
 
+    // Préparer les pièces jointes (QR codes)
+    const attachments = tickets.map((ticket, index) => ({
+      filename: `ticket-${orderData.order_number}-${index + 1}-${ticket.ticketTitle.replace(/[^a-zA-Z0-9]/g, '-')}.png`,
+      content: ticket.qrCodeData.split(',')[1], // Enlever le préfixe data:image/png;base64,
+      encoding: 'base64' as const
+    }));
+
     const result = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'noreply@lafabriqueducode.com',
       to: [orderData.customer.email],
-      subject: `🎫 E-Tickets MR NJP Event's #${orderData.order_number}`,
+      subject: `🎫 Vos E-Tickets MR NJP Event's - Commande #${orderData.order_number}`,
       html: customerEmailTemplate(orderData, tickets),
-      text: customerEmailText(orderData),
+      text: customerEmailText(orderData, tickets),
+      attachments: attachments
     });
 
-    console.log("✅ Email envoyé avec succès:", result.data?.id);
+    console.log("✅ Email avec QR codes envoyé avec succès:", result.data?.id);
     return { 
       success: true, 
       emailId: result.data?.id, 
       ticketsCount: tickets.length,
-        tickets: tickets.map((t: any) => ({ id: t.id, ticketId: t.ticketId }))
+      tickets: tickets.map((t: any) => ({ id: t.id, ticketId: t.ticketId }))
     };
 
   } catch (error) {
